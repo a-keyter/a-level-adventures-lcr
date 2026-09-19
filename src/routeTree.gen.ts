@@ -10,33 +10,64 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SubjectsRouteImport } from './routes/subjects'
+import { Route as PlanChoiceIdRouteImport } from './routes/plan.$choiceId'
+import { Route as QuestsSelectionIdRouteImport } from './routes/quests.$selectionId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SubjectsRoute = SubjectsRouteImport.update({
+  id: '/subjects',
+  path: '/subjects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanChoiceIdRoute = PlanChoiceIdRouteImport.update({
+  id: '/plan/$choiceId',
+  path: '/plan/$choiceId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuestsSelectionIdRoute = QuestsSelectionIdRouteImport.update({
+  id: '/quests/$selectionId',
+  path: '/quests/$selectionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/subjects': typeof SubjectsRoute
+  '/plan/$choiceId': typeof PlanChoiceIdRoute
+  '/quests/$selectionId': typeof QuestsSelectionIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/subjects': typeof SubjectsRoute
+  '/plan/$choiceId': typeof PlanChoiceIdRoute
+  '/quests/$selectionId': typeof QuestsSelectionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/subjects': typeof SubjectsRoute
+  '/plan/$choiceId': typeof PlanChoiceIdRoute
+  '/quests/$selectionId': typeof QuestsSelectionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/subjects' | '/plan/$choiceId' | '/quests/$selectionId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/subjects' | '/plan/$choiceId' | '/quests/$selectionId'
+  id:
+    '__root__' | '/' | '/subjects' | '/plan/$choiceId' | '/quests/$selectionId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SubjectsRoute: typeof SubjectsRoute
+  PlanChoiceIdRoute: typeof PlanChoiceIdRoute
+  QuestsSelectionIdRoute: typeof QuestsSelectionIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +79,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/subjects': {
+      id: '/subjects'
+      path: '/subjects'
+      fullPath: '/subjects'
+      preLoaderRoute: typeof SubjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plan/$choiceId': {
+      id: '/plan/$choiceId'
+      path: '/plan/$choiceId'
+      fullPath: '/plan/$choiceId'
+      preLoaderRoute: typeof PlanChoiceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quests/$selectionId': {
+      id: '/quests/$selectionId'
+      path: '/quests/$selectionId'
+      fullPath: '/quests/$selectionId'
+      preLoaderRoute: typeof QuestsSelectionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SubjectsRoute: SubjectsRoute,
+  PlanChoiceIdRoute: PlanChoiceIdRoute,
+  QuestsSelectionIdRoute: QuestsSelectionIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
