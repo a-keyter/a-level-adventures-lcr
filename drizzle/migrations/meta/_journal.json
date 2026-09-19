@@ -8,6 +8,13 @@
       "when": 1789818785673,
       "tag": "0000_create_adventure_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789820820079,
+      "tag": "0001_lock_down_public_table_access",
+      "breakpoints": true
     }
   ]
 }
