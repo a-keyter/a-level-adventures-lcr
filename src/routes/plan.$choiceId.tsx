@@ -43,16 +43,25 @@ function PlanScreen() {
 
   return (
     <ArcadeFrame>
-      {data ? (
+      <div className="mb-6 flex flex-wrap items-center gap-4">
+        {data ? (
+          <Link
+            to="/quests/$selectionId"
+            params={{ selectionId: data.selectionId }}
+            className="text-muted-foreground hover:text-accent inline-flex items-center gap-1 text-xs uppercase"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back to your quests
+          </Link>
+        ) : null}
         <Link
-          to="/quests/$selectionId"
-          params={{ selectionId: data.selectionId }}
-          className="text-muted-foreground hover:text-accent mb-6 inline-flex items-center gap-1 text-xs uppercase"
+          to="/subjects"
+          className="text-muted-foreground hover:text-accent inline-flex items-center gap-1 text-xs uppercase"
         >
           <ChevronLeft className="h-4 w-4" />
-          Back to your quests
+          Change subjects
         </Link>
-      ) : null}
+      </div>
 
       {isPending ? (
         <LoadingQuest messages={["Opening your project plan..."]} />
