@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
-import { SUBJECTS } from "@/data/subjects";
+import { SUBJECTS, type Subject } from "@/data/subjects";
 import { ArcadeButton } from "@/components/arcade/ArcadeButton";
 import { PixelHeading } from "@/components/arcade/PixelHeading";
 import { SubjectSlots } from "@/components/subjects/SubjectSlots";
+import { SubjectDialog } from "@/components/subjects/SubjectDialog";
 import { cn } from "@/lib/utils";
 
 export function SubjectPicker({
@@ -15,14 +16,15 @@ export function SubjectPicker({
 }) {
   const [query, setQuery] = useState("");
   const [chosen, setChosen] = useState<string[]>([]);
+  const [open, setOpen] = useState<Subject | null>(null);
 
   const grouped = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    const map = new Map<string, string[]>();
+    const map = new Map<string, Subject[]>();
     for (const subject of SUBJECTS) {
       if (needle && !subject.name.toLowerCase().includes(needle)) continue;
       const list = map.get(subject.group) ?? [];
-      list.push(subject.name);
+      list.push(subject);
       map.set(subject.group, list);
     }
     return Array.from(map.entries());
@@ -80,21 +82,20 @@ export function SubjectPicker({
       ) : null}
 
       <div className="flex flex-col gap-6">
-        {grouped.map(([group, names]) => (
+        {grouped.map(([group, subjects]) => (
           <section key={group}>
             <h3 className="font-display text-accent mb-3 text-[0.6rem] tracking-widest uppercase">
               {group}
             </h3>
             <div className="flex flex-wrap gap-2">
-              {names.map((name) => {
+              {subjects.map((subject) => {
+                const name = subject.name;
                 const selected = chosen.includes(name);
-                const blocked = !selected && full;
                 return (
                   <button
                     key={name}
                     type="button"
-                    onClick={() => toggle(name)}
-                    disabled={blocked}
+                    onClick={() => setOpen(subject)}
                     aria-pressed={selected}
                     className={cn(
                       "rounded-md border-2 px-3 py-2.5 text-left text-sm transition-colors",
@@ -102,7 +103,6 @@ export function SubjectPicker({
                       selected
                         ? "border-highlight bg-primary text-primary-foreground"
                         : "border-border bg-surface hover:border-accent hover:bg-surface-2",
-                      blocked && "cursor-not-allowed opacity-40 hover:border-border",
                     )}
                   >
                     {name}
@@ -128,6 +128,19 @@ export function SubjectPicker({
           </ArcadeButton>
         </div>
       </div>
+
+      {open ? (
+        <SubjectDialog
+          subject={open}
+          selected={chosen.includes(open.name)}
+          full={full}
+          onClose={() => setOpen(null)}
+          onToggle={() => {
+            toggle(open.name);
+            setOpen(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
