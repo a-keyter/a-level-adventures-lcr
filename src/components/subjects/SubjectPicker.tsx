@@ -91,7 +91,6 @@ export function SubjectPicker({
               {subjects.map((subject) => {
                 const name = subject.name;
                 const selected = chosen.includes(name);
-                const blocked = false;
                 return (
                   <button
                     key={name}
@@ -104,7 +103,6 @@ export function SubjectPicker({
                       selected
                         ? "border-highlight bg-primary text-primary-foreground"
                         : "border-border bg-surface hover:border-accent hover:bg-surface-2",
-                      blocked && "cursor-not-allowed opacity-40 hover:border-border",
                     )}
                   >
                     {name}
