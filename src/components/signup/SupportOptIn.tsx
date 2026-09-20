@@ -61,13 +61,33 @@ export function SupportOptIn({ choiceId }: { choiceId: string }) {
         potential next steps for your research project.
       </p>
 
-      <div className="mt-4 flex flex-col gap-3">
-        <label className="flex items-start gap-3 text-sm text-muted-foreground">
+      <div className="mt-5 flex flex-col gap-5">
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor="support-email"
+            className="font-display text-accent text-[0.6rem] tracking-widest uppercase"
+          >
+            Your email address
+          </label>
+          <input
+            id="support-email"
+            type="email"
+            required
+            autoComplete="email"
+            inputMode="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com"
+            className="arcade-inset focus-visible:ring-ring placeholder:text-muted-foreground/60 h-14 w-full rounded-md px-4 text-base focus-visible:ring-2 focus-visible:outline-none"
+          />
+        </div>
+
+        <label className="text-muted-foreground flex items-start gap-3 text-sm leading-relaxed">
           <input
             type="checkbox"
             checked={consent}
             onChange={(event) => setConsent(event.target.checked)}
-            className="mt-1 h-4 w-4 accent-accent"
+            className="accent-accent mt-1 h-5 w-5 shrink-0"
           />
           <span>
             I agree that I may be contacted by Generative Minds or Liverpool Chamber about potential
@@ -75,20 +95,15 @@ export function SupportOptIn({ choiceId }: { choiceId: string }) {
           </span>
         </label>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="you@example.com"
-            aria-label="Your email address"
-            className="arcade-inset focus-visible:ring-ring h-12 flex-1 px-3 text-sm focus-visible:ring-2 focus-visible:outline-none"
-          />
-          <ArcadeButton type="submit" variant="accent" disabled={state === "sending"}>
-            {state === "sending" ? "Sending..." : "Register interest"}
-          </ArcadeButton>
-        </div>
+        <ArcadeButton
+          type="submit"
+          variant="accent"
+          size="lg"
+          className="w-full"
+          disabled={state === "sending"}
+        >
+          {state === "sending" ? "Sending..." : "Register interest"}
+        </ArcadeButton>
       </div>
       {error ? <p className="text-destructive mt-3 text-sm">{error}</p> : null}
     </form>
