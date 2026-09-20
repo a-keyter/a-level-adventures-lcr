@@ -28,7 +28,7 @@ export function ArcadeDisclosure({
     <Accordion
       type="single"
       collapsible
-      defaultValue={defaultOpen ? value : undefined}
+      {...(defaultOpen ? { defaultValue: value } : {})}
       className="arcade-panel overflow-hidden"
     >
       <AccordionItem value={value} className="border-0">
