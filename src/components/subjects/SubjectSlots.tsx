@@ -20,7 +20,9 @@ export function SubjectSlots({
               name ? "border-highlight/70 text-foreground" : "text-muted-foreground",
             )}
           >
-            <span className="truncate">{name ?? `Slot ${slot + 1}`}</span>
+            <span className="truncate">
+              {name ?? (slot === 3 ? "Slot 4 (optional)" : `Slot ${slot + 1}`)}
+            </span>
             {name && onRemove ? (
               <button
                 type="button"

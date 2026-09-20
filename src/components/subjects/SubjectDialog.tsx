@@ -84,10 +84,10 @@ export function SubjectDialog({
             className="w-full"
           >
             {selected
-              ? "Remove from your four"
+              ? "Remove from your list"
               : blocked
-                ? "Your four slots are full"
-                : "Add to your four"}
+                ? "All four slots are full"
+                : "Add to your list"}
           </ArcadeButton>
         </div>
       </div>
