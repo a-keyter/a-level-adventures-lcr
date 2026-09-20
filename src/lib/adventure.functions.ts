@@ -64,27 +64,18 @@ async function getDb() {
 }
 
 async function getModel() {
-  const { createOpenAI } = await import("@ai-sdk/openai");
-  const { createLovableAiGatewayRunIdFetch } = await import("@/lib/ai-gateway.server");
+  const { createLovableAiGatewayProvider } = await import("@/lib/ai-gateway.server");
   const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new Error("The adventure guide is not configured yet.");
-  const runIdFetch = createLovableAiGatewayRunIdFetch();
-  const lovable = createOpenAI({
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    apiKey,
-    headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-    fetch: runIdFetch.fetch,
+  const gateway = await createLovableAiGatewayProvider(apiKey, undefined, {
+    structuredOutputs: true,
   });
-  return lovable.responses("openai/gpt-6-astra");
+  return gateway("openai/gpt-5.6-terra");
 }
 
 const reasoningOptions = {
-  openai: {
-    forceReasoning: true,
-    reasoningEffort: "low",
-    reasoningSummary: "auto",
-    store: false,
-    include: ["reasoning.encrypted_content"],
+  lovable: {
+    reasoningEffort: "none",
   },
 } as const;
 
