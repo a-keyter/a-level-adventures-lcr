@@ -16,14 +16,15 @@ export function SubjectPicker({
 }) {
   const [query, setQuery] = useState("");
   const [chosen, setChosen] = useState<string[]>([]);
+  const [open, setOpen] = useState<Subject | null>(null);
 
   const grouped = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    const map = new Map<string, string[]>();
+    const map = new Map<string, Subject[]>();
     for (const subject of SUBJECTS) {
       if (needle && !subject.name.toLowerCase().includes(needle)) continue;
       const list = map.get(subject.group) ?? [];
-      list.push(subject.name);
+      list.push(subject);
       map.set(subject.group, list);
     }
     return Array.from(map.entries());
