@@ -40,6 +40,8 @@ function SubjectsScreen() {
   const navigate = useNavigate();
   const begin = useServerFn(startAdventure);
   const [submitting, setSubmitting] = useState(false);
+  const [chosen, setChosen] = useState<string[]>([]);
+  const [ready, setReady] = useState<{ selectionId: string; count: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -52,8 +54,22 @@ function SubjectsScreen() {
         Title screen
       </Link>
 
-      {submitting ? (
-        <LoadingQuest messages={LOADING_MESSAGES} />
+      {submitting || ready ? (
+        <div className="flex flex-col gap-5">
+          <SectorFlower chosen={chosen} />
+          {submitting ? <LoadingQuest messages={LOADING_MESSAGES} /> : null}
+          {ready ? (
+            <QuestReadyDialog
+              count={ready.count}
+              onContinue={() => {
+                void navigate({
+                  to: "/quests/$selectionId",
+                  params: { selectionId: ready.selectionId },
+                });
+              }}
+            />
+          ) : null}
+        </div>
       ) : (
         <>
           {error ? (
