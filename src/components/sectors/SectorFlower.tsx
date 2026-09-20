@@ -41,11 +41,6 @@ export function SectorFlower({ chosen }: { chosen: string[] }) {
   return (
     <div className="arcade-panel p-5 sm:p-6">
       <PixelHeading as="h2">Where these subjects might take you</PixelHeading>
-      <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
-        Each petal is a priority sector from the Liverpool City Region Local Skills Improvement
-        Plan. Every band inside a petal is a role, and it fills up where one of your subjects
-        overlaps with the skills that role needs. Tap a petal to read the roles.
-      </p>
 
       <div className="mt-5 flex flex-col items-center gap-5 lg:flex-row lg:items-start">
         <svg
