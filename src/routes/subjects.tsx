@@ -114,6 +114,7 @@ function SubjectsScreen() {
             onSubmit={async (subjects) => {
               setError(null);
               setChosen(subjects);
+              setDismissed(false);
               setSubmitting(true);
               try {
                 const result = await begin({ data: { subjects } });
