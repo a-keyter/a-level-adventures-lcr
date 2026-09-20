@@ -40,3 +40,28 @@ export function createLovableAiGatewayRunIdFetch(initialRunId?: string) {
     waitForRunId: () => (runId ? Promise.resolve(runId) : runIdReady),
   };
 }
+
+export async function createLovableAiGatewayProvider(
+  lovableApiKey: string,
+  initialRunId?: string,
+  options?: { structuredOutputs?: boolean },
+) {
+  const { createOpenAICompatible } = await import("@ai-sdk/openai-compatible");
+  const runIdFetch = createLovableAiGatewayRunIdFetch(initialRunId);
+
+  const provider = createOpenAICompatible({
+    name: "lovable",
+    baseURL: "https://ai.gateway.lovable.dev/v1",
+    supportsStructuredOutputs: options?.structuredOutputs ?? false,
+    headers: {
+      "Lovable-API-Key": lovableApiKey,
+      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+    },
+    fetch: runIdFetch.fetch,
+  });
+
+  return Object.assign(provider, {
+    getRunId: runIdFetch.getRunId,
+    waitForRunId: runIdFetch.waitForRunId,
+  });
+}
