@@ -149,6 +149,11 @@
   border-radius: var(--radius-md);
 }
 
+@utility arcade-focus {
+  outline: 3px solid var(--color-ring);
+  outline-offset: 3px;
+}
+
 /* Faint CRT scanlines */
 @utility crt {
   position: relative;
@@ -205,5 +210,13 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .arcade-panel,
+  .arcade-inset {
+    border: 2px solid CanvasText;
+    box-shadow: none;
   }
 }
