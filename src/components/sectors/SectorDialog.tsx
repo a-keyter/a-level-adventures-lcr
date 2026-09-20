@@ -28,7 +28,8 @@ export function SectorDialog({
       className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6"
       role="dialog"
       aria-modal="true"
-      aria-label={sector.name}
+      aria-labelledby="sector-dialog-title"
+      aria-describedby="sector-dialog-description"
     >
       <div
         className="bg-background/80 absolute inset-0 backdrop-blur-sm"
@@ -41,7 +42,7 @@ export function SectorDialog({
             <p className="text-accent text-[0.65rem] tracking-wide uppercase">
               {points} {points === 1 ? "overlap point" : "overlap points"}
             </p>
-            <h3 className="font-display text-highlight mt-1.5 text-[0.75rem] leading-relaxed">
+            <h3 id="sector-dialog-title" className="font-display text-highlight mt-1.5 text-[0.75rem] leading-relaxed">
               {sector.name}
             </h3>
           </div>
@@ -56,7 +57,7 @@ export function SectorDialog({
         </div>
 
         <div className="flex flex-col gap-5 overflow-y-auto p-5 text-sm leading-relaxed">
-          <p className="text-muted-foreground">{sector.blurb}</p>
+          <p id="sector-dialog-description" className="text-muted-foreground">{sector.blurb}</p>
 
           {matches.length === 0 ? (
             <p className="border-border bg-surface-2 text-muted-foreground rounded-md border-2 p-4">

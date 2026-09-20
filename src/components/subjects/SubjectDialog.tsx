@@ -35,7 +35,8 @@ export function SubjectDialog({
       className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6"
       role="dialog"
       aria-modal="true"
-      aria-label={subject.name}
+      aria-labelledby="subject-dialog-title"
+      aria-describedby="subject-dialog-description"
     >
       <div
         className="bg-background/80 absolute inset-0 backdrop-blur-sm"
@@ -46,7 +47,7 @@ export function SubjectDialog({
         <div className="border-border bg-surface-2 flex items-start justify-between gap-3 border-b-2 p-4">
           <div>
             <p className="text-accent text-[0.65rem] tracking-wide uppercase">{subject.group}</p>
-            <h3 className="font-display text-highlight mt-1.5 text-[0.75rem] leading-relaxed">
+            <h3 id="subject-dialog-title" className="font-display text-highlight mt-1.5 text-[0.75rem] leading-relaxed">
               {subject.name}
             </h3>
           </div>
@@ -65,7 +66,7 @@ export function SubjectDialog({
             <h4 className="font-display text-accent text-[0.6rem] tracking-widest uppercase">
               What you&rsquo;d learn
             </h4>
-            <p className="text-muted-foreground">{subject.learn}</p>
+            <p id="subject-dialog-description" className="text-muted-foreground">{subject.learn}</p>
           </section>
 
           <section className="border-highlight/50 bg-surface-2 flex flex-col gap-2 rounded-md border-2 p-4">
