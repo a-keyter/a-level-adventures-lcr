@@ -5,6 +5,8 @@ import { ChevronLeft } from "lucide-react";
 import { ArcadeFrame } from "@/components/arcade/ArcadeFrame";
 import { LoadingQuest } from "@/components/arcade/LoadingQuest";
 import { SubjectPicker } from "@/components/subjects/SubjectPicker";
+import { SectorFlower } from "@/components/sectors/SectorFlower";
+import { QuestReadyDialog } from "@/components/quests/QuestReadyDialog";
 import { startAdventure } from "@/lib/adventure.functions";
 
 export const Route = createFileRoute("/subjects")({
