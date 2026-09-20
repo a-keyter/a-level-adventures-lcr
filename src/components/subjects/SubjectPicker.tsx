@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
-import { SUBJECTS } from "@/data/subjects";
+import { SUBJECTS, type Subject } from "@/data/subjects";
 import { ArcadeButton } from "@/components/arcade/ArcadeButton";
 import { PixelHeading } from "@/components/arcade/PixelHeading";
 import { SubjectSlots } from "@/components/subjects/SubjectSlots";
+import { SubjectDialog } from "@/components/subjects/SubjectDialog";
 import { cn } from "@/lib/utils";
 
 export function SubjectPicker({
