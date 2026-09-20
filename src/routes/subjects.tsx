@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { ArcadeFrame } from "@/components/arcade/ArcadeFrame";
+import { ArcadeButton } from "@/components/arcade/ArcadeButton";
 import { LoadingQuest } from "@/components/arcade/LoadingQuest";
 import { SubjectPicker } from "@/components/subjects/SubjectPicker";
 import { SectorFlower } from "@/components/sectors/SectorFlower";
