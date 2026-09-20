@@ -5,6 +5,8 @@ import { ChevronLeft } from "lucide-react";
 import { ArcadeFrame } from "@/components/arcade/ArcadeFrame";
 import { LoadingQuest } from "@/components/arcade/LoadingQuest";
 import { SubjectPicker } from "@/components/subjects/SubjectPicker";
+import { SectorFlower } from "@/components/sectors/SectorFlower";
+import { QuestReadyDialog } from "@/components/quests/QuestReadyDialog";
 import { startAdventure } from "@/lib/adventure.functions";
 
 export const Route = createFileRoute("/subjects")({
@@ -40,6 +42,8 @@ function SubjectsScreen() {
   const navigate = useNavigate();
   const begin = useServerFn(startAdventure);
   const [submitting, setSubmitting] = useState(false);
+  const [chosen, setChosen] = useState<string[]>([]);
+  const [ready, setReady] = useState<{ selectionId: string; count: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -52,8 +56,22 @@ function SubjectsScreen() {
         Title screen
       </Link>
 
-      {submitting ? (
-        <LoadingQuest messages={LOADING_MESSAGES} />
+      {submitting || ready ? (
+        <div className="flex flex-col gap-5">
+          <SectorFlower chosen={chosen} />
+          {submitting ? <LoadingQuest messages={LOADING_MESSAGES} /> : null}
+          {ready ? (
+            <QuestReadyDialog
+              count={ready.count}
+              onContinue={() => {
+                void navigate({
+                  to: "/quests/$selectionId",
+                  params: { selectionId: ready.selectionId },
+                });
+              }}
+            />
+          ) : null}
+        </div>
       ) : (
         <>
           {error ? (
@@ -65,12 +83,14 @@ function SubjectsScreen() {
             submitting={submitting}
             onSubmit={async (subjects) => {
               setError(null);
+              setChosen(subjects);
               setSubmitting(true);
               try {
                 const result = await begin({ data: { subjects } });
-                await navigate({
-                  to: "/quests/$selectionId",
-                  params: { selectionId: result.selectionId },
+                setSubmitting(false);
+                setReady({
+                  selectionId: result.selectionId,
+                  count: result.ideas?.length ?? 4,
                 });
               } catch {
                 setSubmitting(false);
