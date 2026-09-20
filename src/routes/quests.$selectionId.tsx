@@ -64,7 +64,7 @@ function QuestsScreen() {
         <div className="arcade-panel p-6 text-center">
           <PixelHeading>Quest not found</PixelHeading>
           <p className="text-muted-foreground mt-3 text-sm">
-            We couldn't find that adventure. Pick your four subjects again to start a new one.
+            We couldn't find that adventure. Pick your subjects again to start a new one.
           </p>
           <Link to="/subjects" className="text-accent mt-4 inline-block text-sm underline">
             Choose subjects
@@ -83,7 +83,7 @@ function QuestsScreen() {
           <div className="arcade-panel mb-6 p-5 sm:p-6">
             <PixelHeading as="h2">Your four quests</PixelHeading>
             <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
-              Each quest sits where your four subjects meet a real skills or growth need in the
+              Each quest sits where your subjects meet a real skills or growth need in the
               Liverpool City Region. Open one to read the brief and see where it could lead.
             </p>
             <div className="mt-4">
