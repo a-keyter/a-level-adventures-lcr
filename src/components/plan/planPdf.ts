@@ -1,10 +1,28 @@
 import { jsPDF } from "jspdf";
 import type { ProjectIdea, ProjectPlan } from "@/lib/adventure-types";
 
-const PURPLE = "#3d1a63";
-const MAGENTA = "#c81a7a";
-const TEAL = "#0f8b83";
-const BODY = "#2b2b33";
+const COLOURS = {
+  purple: "#3d1a63",
+  magenta: "#c81a7a",
+  teal: "#0f8b83",
+  ink: "#292530",
+  muted: "#665f70",
+  lightPurple: "#f5f0f8",
+  paleTeal: "#edf7f5",
+  rule: "#d9d0df",
+  white: "#ffffff",
+} as const;
+
+const PAGE = {
+  margin: 46,
+  footerHeight: 38,
+  coverHeight: 146,
+  bodyTop: 174,
+  textSize: 10.5,
+  lineHeight: 14.5,
+} as const;
+
+type TextStyle = "normal" | "bold" | "italic";
 
 export function downloadPlanPdf({
   plan,
@@ -18,168 +36,248 @@ export function downloadPlanPdf({
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 48;
-  const width = pageWidth - margin * 2;
-  let y = 0;
+  const contentWidth = pageWidth - PAGE.margin * 2;
+  const contentBottom = pageHeight - PAGE.footerHeight;
+  let y = PAGE.bodyTop;
 
-  const newPage = () => {
-    doc.addPage();
-    y = margin;
-  };
-
-  const space = (needed: number) => {
-    if (y + needed > pageHeight - margin) newPage();
-  };
-
-  const text = (
-    value: string,
-    options: { size?: number; colour?: string; style?: "normal" | "bold" | "italic"; gap?: number } = {},
-  ) => {
-    const { size = 10.5, colour = BODY, style = "normal", gap = 6 } = options;
+  const setText = (size: number, colour: string, style: TextStyle = "normal") => {
     doc.setFont("helvetica", style);
     doc.setFontSize(size);
     doc.setTextColor(colour);
-    const lines = doc.splitTextToSize(value, width) as string[];
-    space(lines.length * (size + 3));
-    doc.text(lines, margin, y);
-    y += lines.length * (size + 3) + gap;
   };
 
-  const heading = (value: string) => {
-    space(40);
-    y += 8;
-    doc.setFillColor(MAGENTA);
-    doc.rect(margin, y - 9, 4, 13, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12.5);
-    doc.setTextColor(PURPLE);
-    doc.text(value.toUpperCase(), margin + 12, y);
-    y += 16;
+  const wrapped = (value: string, width = contentWidth) =>
+    doc.splitTextToSize(value || "", width) as string[];
+
+  const newPage = () => {
+    doc.addPage();
+    y = PAGE.margin + 8;
   };
 
-  const bullets = (items: string[]) => {
-    for (const item of items) {
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10.5);
-      doc.setTextColor(BODY);
-      const lines = doc.splitTextToSize(item, width - 16) as string[];
-      space(lines.length * 13.5 + 4);
-      doc.setTextColor(TEAL);
-      doc.text("•", margin, y);
-      doc.setTextColor(BODY);
-      doc.text(lines, margin + 14, y);
-      y += lines.length * 13.5 + 4;
+  const ensureSpace = (height: number) => {
+    if (y + height > contentBottom && y > PAGE.margin + 12) newPage();
+  };
+
+  const drawLines = (
+    lines: string[],
+    options: {
+      size?: number;
+      colour?: string;
+      style?: TextStyle;
+      lineHeight?: number;
+      x?: number;
+    } = {},
+  ) => {
+    const size = options.size ?? PAGE.textSize;
+    const lineHeight = options.lineHeight ?? PAGE.lineHeight;
+    const x = options.x ?? PAGE.margin;
+    setText(size, options.colour ?? COLOURS.ink, options.style);
+
+    for (const line of lines) {
+      if (y + lineHeight > contentBottom) newPage();
+      doc.text(line, x, y);
+      y += lineHeight;
     }
-    y += 4;
   };
 
-  // Cover band
-  doc.setFillColor(PURPLE);
-  doc.rect(0, 0, pageWidth, 132, "F");
-  doc.setFillColor(MAGENTA);
-  doc.rect(0, 132, pageWidth, 6, "F");
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor("#7fe3dc");
-  doc.text("A LEVEL ADVENTURES IN THE LCR", margin, 46);
-  doc.setFontSize(20);
-  doc.setTextColor("#ffffff");
-  const titleLines = doc.splitTextToSize(plan.title, width) as string[];
-  doc.text(titleLines.slice(0, 2), margin, 74);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor("#e9d9f7");
-  doc.text(`A levels: ${subjects.join(" · ")}`, margin, 74 + titleLines.slice(0, 2).length * 22);
-  doc.text(`Sector focus: ${idea.sector}`, margin, 88 + titleLines.slice(0, 2).length * 22);
+  const drawText = (
+    value: string,
+    options: {
+      size?: number;
+      colour?: string;
+      style?: TextStyle;
+      gap?: number;
+      width?: number;
+      lineHeight?: number;
+    } = {},
+  ) => {
+    const size = options.size ?? PAGE.textSize;
+    const lineHeight = options.lineHeight ?? PAGE.lineHeight;
+    const lines = wrapped(value, options.width ?? contentWidth);
+    drawLines(lines, { ...options, size, lineHeight });
+    y += options.gap ?? 7;
+  };
 
-  y = 168;
+  const sectionHeading = (value: string) => {
+    ensureSpace(34);
+    y += 5;
+    doc.setFillColor(COLOURS.magenta);
+    doc.rect(PAGE.margin, y - 11, 4, 15, "F");
+    setText(12, COLOURS.purple, "bold");
+    doc.text(value.toUpperCase(), PAGE.margin + 12, y);
+    y += 21;
+  };
 
-  heading("Overview");
-  text(plan.overview);
+  const drawBullets = (items: string[]) => {
+    for (const item of items) {
+      const lines = wrapped(item, contentWidth - 17);
+      const height = Math.max(lines.length, 1) * PAGE.lineHeight + 4;
+      ensureSpace(height);
+      setText(PAGE.textSize, COLOURS.teal);
+      doc.text("•", PAGE.margin, y);
+      drawLines(lines, { x: PAGE.margin + 16 });
+      y += 4;
+    }
+    y += 3;
+  };
 
-  heading("Our aim");
-  text(plan.aim, { style: "italic" });
+  const drawCard = (options: {
+    title?: string;
+    label?: string;
+    body?: string;
+    bodyColour?: string;
+    fill?: string;
+    border?: string;
+    titleColour?: string;
+    padding?: number;
+  }) => {
+    const padding = options.padding ?? 12;
+    const titleLines = options.title ? wrapped(options.title, contentWidth - padding * 2) : [];
+    const labelLines = options.label ? wrapped(options.label, contentWidth - padding * 2) : [];
+    const bodyLines = options.body ? wrapped(options.body, contentWidth - padding * 2) : [];
+    const lineCount = titleLines.length + labelLines.length + bodyLines.length;
+    const height = padding * 2 + Math.max(lineCount, 1) * PAGE.lineHeight + 4;
 
-  heading("Research questions");
-  bullets(plan.researchQuestions);
+    ensureSpace(height);
+    doc.setFillColor(options.fill ?? COLOURS.lightPurple);
+    doc.setDrawColor(options.border ?? COLOURS.rule);
+    doc.roundedRect(PAGE.margin, y - 10, contentWidth, height, 5, 5, "FD");
+    y += padding;
 
-  heading("Time commitment");
-  text(plan.weeklyCommitment);
+    if (options.label) {
+      drawLines(labelLines, { size: 8.5, colour: COLOURS.teal, style: "bold", lineHeight: 12 });
+      y += 2;
+    }
+    if (options.title) {
+      drawLines(titleLines, {
+        size: 11,
+        colour: options.titleColour ?? COLOURS.purple,
+        style: "bold",
+      });
+      y += 1;
+    }
+    if (options.body) {
+      drawLines(bodyLines, {
+        colour: options.bodyColour ?? COLOURS.ink,
+      });
+    }
+    y += padding - 4;
+  };
 
-  heading("Local organisations to approach");
+  const drawCover = () => {
+    doc.setFillColor(COLOURS.purple);
+    doc.rect(0, 0, pageWidth, PAGE.coverHeight, "F");
+    doc.setFillColor(COLOURS.magenta);
+    doc.rect(0, PAGE.coverHeight, pageWidth, 6, "F");
+
+    setText(8.5, "#91e1db", "bold");
+    doc.text("A LEVEL ADVENTURES IN THE LCR", PAGE.margin, 39);
+
+    const titleLines = wrapped(plan.title, contentWidth - 12).slice(0, 2);
+    if (wrapped(plan.title, contentWidth - 12).length > titleLines.length) {
+      titleLines[titleLines.length - 1] = `${titleLines[titleLines.length - 1]}...`;
+    }
+    setText(20, COLOURS.white, "bold");
+    doc.text(titleLines, PAGE.margin, 70, { lineHeightFactor: 1.18 });
+
+    const metadataY = 78 + titleLines.length * 22;
+    setText(9.5, "#eadcf3");
+    doc.text(`A levels: ${subjects.join(" | ")}`, PAGE.margin, metadataY);
+    doc.text(`Sector focus: ${idea.sector}`, PAGE.margin, metadataY + 16);
+  };
+
+  const drawFooter = () => {
+    const pages = doc.getNumberOfPages();
+    for (let page = 1; page <= pages; page += 1) {
+      doc.setPage(page);
+      doc.setDrawColor(COLOURS.rule);
+      doc.line(
+        PAGE.margin,
+        pageHeight - PAGE.footerHeight + 4,
+        pageWidth - PAGE.margin,
+        pageHeight - PAGE.footerHeight + 4,
+      );
+      setText(7.5, COLOURS.muted);
+      doc.text(
+        "Check contact details before getting in touch, and ask a teacher to review messages.",
+        PAGE.margin,
+        pageHeight - 19,
+      );
+      doc.text(`${page} / ${pages}`, pageWidth - PAGE.margin, pageHeight - 19, { align: "right" });
+    }
+  };
+
+  drawCover();
+
+  sectionHeading("Project at a glance");
+  drawText(plan.overview, { size: 11, lineHeight: 15.5, gap: 9 });
+  drawCard({
+    label: "OUR AIM",
+    body: plan.aim,
+    fill: COLOURS.paleTeal,
+    border: "#abdcd5",
+    bodyColour: COLOURS.purple,
+  });
+  y += 5;
+  drawCard({
+    label: "TIME COMMITMENT",
+    body: plan.weeklyCommitment,
+    fill: COLOURS.lightPurple,
+  });
+
+  sectionHeading("Research questions");
+  drawBullets(plan.researchQuestions);
+
+  sectionHeading("Local organisations to approach");
   for (const partner of plan.localPartners) {
-    space(60);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(PURPLE);
-    doc.text(`${partner.name} (${partner.kind})`, margin, y);
-    y += 14;
-    text(partner.whyRelevant, { gap: 2 });
-    text(`First step: ${partner.howToApproach}`, { style: "italic", colour: TEAL, gap: 10 });
+    drawCard({
+      title: partner.name,
+      label: partner.kind,
+      body: `${partner.whyRelevant}\nFirst step: ${partner.howToApproach}`,
+      bodyColour: COLOURS.ink,
+      fill: COLOURS.white,
+    });
+    y += 5;
   }
 
-  heading("A message you could send");
-  doc.setDrawColor("#d8cbe8");
-  doc.setFillColor("#f6f1fb");
-  {
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10.5);
-    const lines = doc.splitTextToSize(plan.outreachMessage, width - 24) as string[];
-    space(lines.length * 13.5 + 24);
-    doc.roundedRect(margin, y - 12, width, lines.length * 13.5 + 20, 6, 6, "FD");
-    doc.setTextColor(BODY);
-    doc.text(lines, margin + 12, y + 2);
-    y += lines.length * 13.5 + 22;
-  }
+  sectionHeading("A message you could send");
+  drawCard({
+    body: plan.outreachMessage,
+    fill: COLOURS.paleTeal,
+    border: "#abdcd5",
+    padding: 15,
+  });
 
-  heading("Week by week");
+  sectionHeading("Week by week");
   for (const week of plan.timeline) {
-    space(70);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10.5);
-    doc.setTextColor(MAGENTA);
-    doc.text(`${week.week} — ${week.focus}`, margin, y);
-    y += 14;
-    bullets(week.tasks);
-    text(`Meeting: ${week.meeting}`, { style: "italic", colour: TEAL, gap: 10 });
+    drawCard({
+      title: `${week.week} - ${week.focus}`,
+      body: `${week.tasks.map((task) => `• ${task}`).join("\n")}\nMeeting: ${week.meeting}`,
+      fill: COLOURS.white,
+      titleColour: COLOURS.magenta,
+    });
+    y += 5;
   }
 
-  heading("Who does what");
+  sectionHeading("Who does what");
   for (const role of plan.teamRoles) {
-    space(40);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10.5);
-    doc.setTextColor(PURPLE);
-    doc.text(role.role, margin, y);
-    y += 13;
-    text(role.responsibilities, { gap: 8 });
+    drawCard({ title: role.role, body: role.responsibilities, fill: COLOURS.lightPurple });
+    y += 5;
   }
 
-  heading("Ethics and safety");
-  bullets(plan.ethicsAndSafety);
+  sectionHeading("Ethics and safety");
+  drawBullets(plan.ethicsAndSafety);
 
-  heading("What finished looks like");
-  bullets(plan.whatDoneLooksLike);
+  sectionHeading("What finished looks like");
+  drawBullets(plan.whatDoneLooksLike);
 
-  heading("Sharing your findings");
-  bullets(plan.sharingYourFindings);
+  sectionHeading("Sharing your findings");
+  drawBullets(plan.sharingYourFindings);
 
-  heading("Keeping it manageable");
-  bullets(plan.keepingItManageable);
+  sectionHeading("Keeping it manageable");
+  drawBullets(plan.keepingItManageable);
 
-  const pages = doc.getNumberOfPages();
-  for (let page = 1; page <= pages; page += 1) {
-    doc.setPage(page);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor("#8a8397");
-    doc.text(
-      "Generated by A Level Adventures in the LCR — always check contact details before getting in touch.",
-      margin,
-      pageHeight - 24,
-    );
-    doc.text(`${page} / ${pages}`, pageWidth - margin, pageHeight - 24, { align: "right" });
-  }
+  drawFooter();
 
   const slug = plan.title
     .toLowerCase()
