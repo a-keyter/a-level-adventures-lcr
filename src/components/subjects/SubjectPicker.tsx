@@ -10,12 +10,14 @@ import { cn } from "@/lib/utils";
 export function SubjectPicker({
   onSubmit,
   submitting,
+  initialChosen = [],
 }: {
   onSubmit: (subjects: string[]) => void;
   submitting: boolean;
+  initialChosen?: string[];
 }) {
   const [query, setQuery] = useState("");
-  const [chosen, setChosen] = useState<string[]>([]);
+  const [chosen, setChosen] = useState<string[]>(initialChosen);
   const [open, setOpen] = useState<Subject | null>(null);
 
   const grouped = useMemo(() => {

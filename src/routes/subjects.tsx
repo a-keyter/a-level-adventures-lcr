@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft } from "lucide-react";
+import { z } from "zod";
 import { ArcadeFrame } from "@/components/arcade/ArcadeFrame";
 import { ArcadeButton } from "@/components/arcade/ArcadeButton";
 import { LoadingQuest } from "@/components/arcade/LoadingQuest";
@@ -9,8 +10,10 @@ import { SubjectPicker } from "@/components/subjects/SubjectPicker";
 import { SectorFlower } from "@/components/sectors/SectorFlower";
 import { QuestReadyDialog } from "@/components/quests/QuestReadyDialog";
 import { startAdventure } from "@/lib/adventure.functions";
+import { SUBJECTS } from "@/data/subjects";
 
 export const Route = createFileRoute("/subjects")({
+  validateSearch: z.object({ subjects: z.string().optional() }),
   head: () => ({
     meta: [
       { title: "Choose your four A levels — A Level Adventures in the LCR" },
@@ -40,19 +43,66 @@ const LOADING_MESSAGES = [
 ];
 
 function SubjectsScreen() {
+  const { subjects: subjectsQuery } = Route.useSearch();
   const navigate = useNavigate();
   const begin = useServerFn(startAdventure);
   const [submitting, setSubmitting] = useState(false);
-  const [chosen, setChosen] = useState<string[]>([]);
-  const [ready, setReady] = useState<{ selectionId: string; count: number } | null>(null);
-  const [dismissed, setDismissed] = useState(false);
+  const [chosen, setChosen] = useState<string[]>(() => parseSubjects(subjectsQuery));
+  const [ready, setReady] = useState<{
+    selectionId: string;
+    count: number;
+    subjects: string[];
+  } | null>(null);
+  const [dismissed, setDismissed] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const startedQueryRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    setChosen(parseSubjects(subjectsQuery));
+  }, [subjectsQuery]);
+
+  useEffect(() => {
+    if (!ready) return;
+    const timer = window.setTimeout(() => setDismissed(false), 30_000);
+    return () => window.clearTimeout(timer);
+  }, [ready]);
+
+  useEffect(() => {
+    const restoredSubjects = parseSubjects(subjectsQuery);
+    if (
+      restoredSubjects.length < 3 ||
+      restoredSubjects.length > 4 ||
+      submitting ||
+      ready ||
+      startedQueryRef.current === subjectsQuery
+    ) {
+      return;
+    }
+
+    startedQueryRef.current = subjectsQuery ?? null;
+    setChosen(restoredSubjects);
+    setSubmitting(true);
+    void begin({ data: { subjects: restoredSubjects } })
+      .then((result) => {
+        setSubmitting(false);
+        setReady({
+          selectionId: result.selectionId,
+          count: result.ideas?.length ?? 4,
+          subjects: restoredSubjects,
+        });
+      })
+      .catch(() => {
+        setSubmitting(false);
+        setError("Something went wrong while building your quests. Please try again in a moment.");
+      });
+  }, [begin, ready, subjectsQuery, submitting]);
 
   const goToQuests = () => {
     if (!ready) return;
     void navigate({
       to: "/quests/$selectionId",
       params: { selectionId: ready.selectionId },
+      search: { subjects: ready.subjects.join(",") },
     });
   };
 
@@ -65,6 +115,7 @@ function SubjectsScreen() {
             setReady(null);
             setDismissed(false);
             setSubmitting(false);
+            void navigate({ to: "/subjects", search: {} });
           }}
           className="text-muted-foreground hover:text-accent mb-6 inline-flex items-center gap-1 text-xs uppercase"
         >
@@ -111,18 +162,25 @@ function SubjectsScreen() {
           ) : null}
           <SubjectPicker
             submitting={submitting}
+            initialChosen={chosen}
             onSubmit={async (subjects) => {
               setError(null);
               setChosen(subjects);
-                setDismissed(false);
-                setSubmitting(true);
-                window.scrollTo({ top: 0, behavior: "auto" });
+              setDismissed(true);
+              setSubmitting(true);
+              window.scrollTo({ top: 0, behavior: "auto" });
+              void navigate({
+                to: "/subjects",
+                search: { subjects: subjects.join(",") },
+                replace: true,
+              });
               try {
                 const result = await begin({ data: { subjects } });
                 setSubmitting(false);
                 setReady({
                   selectionId: result.selectionId,
                   count: result.ideas?.length ?? 4,
+                  subjects,
                 });
               } catch {
                 setSubmitting(false);
@@ -136,4 +194,11 @@ function SubjectsScreen() {
       )}
     </ArcadeFrame>
   );
+}
+
+function parseSubjects(value: string | undefined) {
+  const available = new Set(SUBJECTS.map((subject) => subject.name));
+  return value
+    ? [...new Set(value.split(",").filter((subject) => available.has(subject)))].slice(0, 4)
+    : [];
 }

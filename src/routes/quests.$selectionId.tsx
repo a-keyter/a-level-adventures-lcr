@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
+import { z } from "zod";
 import { ArcadeFrame } from "@/components/arcade/ArcadeFrame";
 import { LoadingQuest } from "@/components/arcade/LoadingQuest";
 import { PixelHeading } from "@/components/arcade/PixelHeading";
@@ -12,6 +13,7 @@ import { ProjectDialog } from "@/components/projects/ProjectDialog";
 import { chooseProject, getAdventure } from "@/lib/adventure.functions";
 
 export const Route = createFileRoute("/quests/$selectionId")({
+  validateSearch: z.object({ subjects: z.string().optional() }),
   head: () => ({
     meta: [
       { title: "Your four quests — A Level Adventures in the LCR" },
@@ -35,6 +37,7 @@ export const Route = createFileRoute("/quests/$selectionId")({
 
 function QuestsScreen() {
   const { selectionId } = Route.useParams();
+  const { subjects } = Route.useSearch();
   const navigate = useNavigate();
   const load = useServerFn(getAdventure);
   const choose = useServerFn(chooseProject);
@@ -52,6 +55,7 @@ function QuestsScreen() {
     <ArcadeFrame>
       <Link
         to="/subjects"
+        search={{ subjects }}
         className="text-muted-foreground hover:text-accent mb-6 inline-flex items-center gap-1 text-xs uppercase"
       >
         <ChevronLeft className="h-4 w-4" />
