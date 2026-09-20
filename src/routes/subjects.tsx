@@ -114,8 +114,9 @@ function SubjectsScreen() {
             onSubmit={async (subjects) => {
               setError(null);
               setChosen(subjects);
-              setDismissed(false);
-              setSubmitting(true);
+                setDismissed(false);
+                setSubmitting(true);
+                window.scrollTo({ top: 0, behavior: "auto" });
               try {
                 const result = await begin({ data: { subjects } });
                 setSubmitting(false);

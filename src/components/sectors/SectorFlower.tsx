@@ -40,7 +40,7 @@ export function SectorFlower({ chosen }: { chosen: string[] }) {
 
   return (
     <div className="arcade-panel p-5 sm:p-6">
-      <PixelHeading as="h2">Where your subjects land</PixelHeading>
+      <PixelHeading as="h2">Where these subjects might take you</PixelHeading>
       <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
         Each petal is a priority sector from the Liverpool City Region Local Skills Improvement
         Plan. Every band inside a petal is a role, and it fills up where one of your subjects
@@ -49,6 +49,7 @@ export function SectorFlower({ chosen }: { chosen: string[] }) {
 
       <div className="mt-5 flex flex-col items-center gap-5 lg:flex-row lg:items-start">
         <svg
+          style={{ order: 2 }}
           viewBox={`0 0 ${SIZE} ${SIZE}`}
           className="w-full max-w-[340px] shrink-0"
           role="img"
@@ -127,7 +128,7 @@ export function SectorFlower({ chosen }: { chosen: string[] }) {
           </text>
         </svg>
 
-        <ul className="flex w-full flex-col gap-2">
+        <ul className="flex w-full flex-col gap-2" style={{ order: 1 }}>
           {[...overlaps]
             .sort((a, b) => b.points - a.points)
             .map((overlap) => (
