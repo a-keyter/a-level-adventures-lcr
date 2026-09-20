@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
+import { ArcadeButton } from "@/components/arcade/ArcadeButton";
 import { ArcadeFrame } from "@/components/arcade/ArcadeFrame";
 import { LoadingQuest } from "@/components/arcade/LoadingQuest";
 import { PixelHeading } from "@/components/arcade/PixelHeading";
@@ -104,6 +105,14 @@ function PlanScreen() {
           </div>
 
           <SupportOptIn choiceId={data.choiceId} />
+
+          <div className="flex justify-center">
+            <Link to="/" onClick={() => window.scrollTo({ top: 0 })}>
+              <ArcadeButton type="button" variant="ghost" size="lg" className="w-full sm:w-auto">
+                Start again
+              </ArcadeButton>
+            </Link>
+          </div>
         </div>
       )}
     </ArcadeFrame>
