@@ -136,7 +136,7 @@ export function ProjectDialog({
 
         <div className="border-border bg-surface-2 border-t-2 p-4">
           <ArcadeButton onClick={onChoose} disabled={choosing} className="w-full">
-            {choosing ? "Preparing your plan..." : "Choose this quest"}
+            {choosing ? "Preparing your summary..." : "Choose this quest"}
           </ArcadeButton>
         </div>
       </div>

@@ -76,9 +76,8 @@ function QuestsScreen() {
       ) : choosing ? (
         <LoadingQuest
           messages={[
-            "Finding local organisations who might help...",
-            "Working out how to fit this into three hours a week...",
-            "Writing your week-by-week project plan...",
+            "Preparing your project summary...",
+            "Checking your chosen quest...",
           ]}
         />
       ) : (
@@ -126,7 +125,7 @@ function QuestsScreen() {
                   });
                 } catch {
                   setChoosing(false);
-                  setError("We couldn't build that project plan. Please try again in a moment.");
+                  setError("We couldn't save that quest choice. Please try again in a moment.");
                 }
               }}
             />

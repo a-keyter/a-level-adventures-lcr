@@ -7,6 +7,7 @@ import { requestSupport } from "@/lib/adventure.functions";
 export function SupportOptIn({ choiceId }: { choiceId: string }) {
   const submit = useServerFn(requestSupport);
   const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -19,8 +20,8 @@ export function SupportOptIn({ choiceId }: { choiceId: string }) {
             You're on the list
           </h3>
           <p className="text-muted-foreground mt-2 text-sm">
-            Thanks. We'll pass your interest to local partners who support young researchers in the
-            Liverpool City Region. Your email isn't linked to your name.
+            Thanks. We&apos;ll pass your interest to Generative Minds and Liverpool Chamber so they can
+            get in touch about potential next steps to pursue your research project.
           </p>
         </div>
       </div>
@@ -33,9 +34,15 @@ export function SupportOptIn({ choiceId }: { choiceId: string }) {
       onSubmit={async (event) => {
         event.preventDefault();
         setError(null);
+
+        if (!consent) {
+          setError("Please confirm that you agree to be contacted before registering your interest.");
+          return;
+        }
+
         setState("sending");
         try {
-          await submit({ data: { choiceId, email } });
+          await submit({ data: { choiceId, email, consent } });
           setState("done");
         } catch {
           setState("idle");
@@ -46,27 +53,42 @@ export function SupportOptIn({ choiceId }: { choiceId: string }) {
       <div className="mb-3 flex items-center gap-2">
         <Mail className="text-accent h-4 w-4" aria-hidden />
         <h3 className="font-display text-highlight text-[0.65rem] tracking-widest uppercase">
-          Want ongoing support?
+          Would you like support with your project?
         </h3>
       </div>
       <p className="text-muted-foreground text-sm">
-        Leave an email address if you'd like local partners to get in touch about helping with your
-        research project. This is completely optional. We store the address on its own, with no name
-        attached — only a random ID links it to the project you chose.
+        Register your interest and we&apos;ll share your details with local partners who can help with
+        potential next steps for your research project.
       </p>
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="you@example.com"
-          aria-label="Your email address"
-          className="arcade-inset focus-visible:ring-ring h-12 flex-1 px-3 text-sm focus-visible:ring-2 focus-visible:outline-none"
-        />
-        <ArcadeButton type="submit" variant="accent" disabled={state === "sending"}>
-          {state === "sending" ? "Sending..." : "Keep me posted"}
-        </ArcadeButton>
+
+      <div className="mt-4 flex flex-col gap-3">
+        <label className="flex items-start gap-3 text-sm text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(event) => setConsent(event.target.checked)}
+            className="mt-1 h-4 w-4 accent-accent"
+          />
+          <span>
+            I agree that I may be contacted by Generative Minds or Liverpool Chamber about potential
+            next steps to pursue this research project.
+          </span>
+        </label>
+
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com"
+            aria-label="Your email address"
+            className="arcade-inset focus-visible:ring-ring h-12 flex-1 px-3 text-sm focus-visible:ring-2 focus-visible:outline-none"
+          />
+          <ArcadeButton type="submit" variant="accent" disabled={state === "sending"}>
+            {state === "sending" ? "Sending..." : "Register interest"}
+          </ArcadeButton>
+        </div>
       </div>
       {error ? <p className="text-destructive mt-3 text-sm">{error}</p> : null}
     </form>

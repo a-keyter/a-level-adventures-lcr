@@ -199,7 +199,7 @@ export const getAdventure = createServerFn({ method: "GET" })
     };
   });
 
-/** Record the chosen project and return (or generate) its research plan. */
+/** Record the chosen project without generating any follow-up plan content. */
 export const chooseProject = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z.object({ selectionId: z.string().uuid(), projectIndex: z.number().int().min(0).max(3) }).parse(
@@ -222,65 +222,6 @@ export const chooseProject = createServerFn({ method: "POST" })
     const idea = combo?.ideas?.[data.projectIndex];
     if (!idea) throw new Error("That project could not be found.");
 
-    const cached = await db
-      .from("project_plans")
-      .select("plan")
-      .eq("combination_id", combinationId)
-      .eq("project_index", data.projectIndex)
-      .maybeSingle();
-
-    let plan = cached.data?.plan as ProjectPlan | undefined;
-
-    if (!plan) {
-      const { streamText, Output } = await import("ai");
-      const { LSIP_CONTEXT } = await import("@/data/lsip");
-
-      const result = streamText({
-        model: await getModel(),
-        output: Output.object({ schema: planSchema }),
-        providerOptions: reasoningOptions,
-        system: [
-          "You help sixth-form students in the Liverpool City Region plan small, realistic research projects",
-          "with local partners. Write warm, practical, encouraging British English. Never use American spellings.",
-          "Every plan must fit within three hours a week and no more than two meetings a week, alongside studies.",
-          "Name real, recognisable Liverpool City Region organisations, universities, employers, councils, charities",
-          "and networks. Be honest that students should check details and contact routes themselves.",
-          "",
-          LSIP_CONTEXT,
-        ].join("\n"),
-        prompt: [
-          `Subjects being studied: ${subjects.join(", ")}.`,
-          `Chosen project: ${idea.title} — ${idea.strapline}`,
-          `Sector: ${idea.sector}`,
-          `Summary: ${idea.summary}`,
-          `Why it matters: ${idea.whyItMatters}`,
-          "",
-          "Produce a practical project plan containing:",
-          "- title: the project title",
-          "- overview: two or three sentences a teacher could read at a glance",
-          "- aim: one sentence stating what the group will find out",
-          "- researchQuestions: three focused questions",
-          "- localPartners: six real Liverpool City Region organisations that might support this, each with",
-          "  kind (for example university, employer, council, charity, network), why they are relevant, and a",
-          "  concrete first step for approaching them",
-          "- outreachMessage: a short, polite email a student could adapt, under 150 words",
-          "- weeklyCommitment: one sentence describing how the three hours and two meetings are used",
-          "- timeline: ten entries, one per week, each with week label, focus, three tasks and the meeting for that week",
-          "- teamRoles: four roles for a group of peers with responsibilities",
-          "- ethicsAndSafety: four points covering consent, data protection, safeguarding and safe working",
-          "- whatDoneLooksLike: four clear finish-line outcomes",
-          "- sharingYourFindings: four ways to share the results locally",
-          "- keepingItManageable: four honest tips for staying within three hours a week",
-        ].join("\n"),
-      });
-
-      plan = (await result.output) as ProjectPlan;
-
-      await db
-        .from("project_plans")
-        .insert({ combination_id: combinationId, project_index: data.projectIndex, plan });
-    }
-
     const choice = await db
       .from("choices")
       .insert({
@@ -294,10 +235,10 @@ export const chooseProject = createServerFn({ method: "POST" })
 
     if (choice.error) throw new Error("Could not save your choice. Please try again.");
 
-    return { choiceId: choice.data.id as string, subjects, idea, plan };
+    return { choiceId: choice.data.id as string, subjects, idea };
   });
 
-/** Load a saved choice and its plan. */
+/** Load a saved choice and its selected idea. */
 export const getChoice = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => z.object({ choiceId: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
@@ -310,33 +251,33 @@ export const getChoice = createServerFn({ method: "GET" })
 
     if (!choice) throw new Error("That project could not be found.");
 
-    const [{ data: combo }, { data: planRow }, { data: selection }] = await Promise.all([
+    const [{ data: combo }, { data: selection }] = await Promise.all([
       db.from("subject_combinations").select("ideas").eq("id", choice.combination_id).maybeSingle(),
-      db
-        .from("project_plans")
-        .select("plan")
-        .eq("combination_id", choice.combination_id)
-        .eq("project_index", choice.project_index)
-        .maybeSingle(),
       db.from("selections").select("subjects").eq("id", choice.selection_id).maybeSingle(),
     ]);
 
     const idea = (combo?.ideas as ProjectIdea[] | undefined)?.[choice.project_index];
-    if (!idea || !planRow?.plan) throw new Error("That project plan could not be found.");
+    if (!idea) throw new Error("That project could not be found.");
 
     return {
       choiceId: choice.id as string,
       selectionId: choice.selection_id as string,
       subjects: (selection?.subjects ?? []) as string[],
       idea,
-      plan: planRow.plan as ProjectPlan,
+      plan: null as ProjectPlan | null,
     };
   });
 
 /** Store an email against a choice, with no name attached. */
 export const requestSupport = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
-    z.object({ choiceId: z.string().uuid(), email: z.string().email() }).parse(input),
+    z
+      .object({
+        choiceId: z.string().uuid(),
+        email: z.string().email(),
+        consent: z.boolean().refine((value) => value === true),
+      })
+      .parse(input),
   )
   .handler(async ({ data }) => {
     const db = await getDb();
