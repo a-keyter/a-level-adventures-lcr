@@ -39,14 +39,15 @@ export function SubjectPicker({
   };
 
   const full = chosen.length === 4;
+  const ready = chosen.length >= 3;
 
   return (
     <div className="flex flex-col gap-6 pb-40">
       <div className="arcade-panel p-5 sm:p-6">
-        <PixelHeading as="h2">Choose your four</PixelHeading>
+        <PixelHeading as="h2">Choose your subjects</PixelHeading>
         <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
-          Pick the four A levels you are studying, or thinking about studying, at a Liverpool City
-          Region college or sixth form. Your party of four decides which adventures unlock.
+          Pick three or four A levels you are studying, or thinking about studying, at a Liverpool
+          City Region college or sixth form. Your party decides which adventures unlock.
         </p>
 
         <div className="relative mt-5">
@@ -120,12 +121,21 @@ export function SubjectPicker({
           <ArcadeButton
             type="button"
             size="md"
-            disabled={!full || submitting}
+            disabled={!ready || submitting}
             onClick={() => onSubmit(chosen)}
             className="w-full"
           >
-            {submitting ? "Generating..." : full ? "Begin adventure" : `Pick ${4 - chosen.length} more`}
+            {submitting
+              ? "Generating..."
+              : ready
+                ? "Begin adventure"
+                : `Pick ${3 - chosen.length} more`}
           </ArcadeButton>
+          {ready && !full ? (
+            <p className="text-muted-foreground text-center text-xs">
+              You can add a fourth subject, or begin with three.
+            </p>
+          ) : null}
         </div>
       </div>
 

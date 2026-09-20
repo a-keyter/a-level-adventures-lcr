@@ -60,7 +60,7 @@ export function SectorDialog({
 
           {matches.length === 0 ? (
             <p className="border-border bg-surface-2 text-muted-foreground rounded-md border-2 p-4">
-              None of your four subjects line up directly with this sector&rsquo;s roles — which
+              None of your subjects line up directly with this sector&rsquo;s roles — which
               doesn&rsquo;t rule it out, but the roles below show what employers here are asking
               for.
             </p>

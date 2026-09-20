@@ -24,7 +24,7 @@ export function QuestReadyDialog({ count, onContinue }: { count: number; onConti
           New quest{count === 1 ? "" : "s"} available!
         </h3>
         <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
-          {count} challenge brief{count === 1 ? " is" : "s are"} ready, built from your four subjects
+          {count} challenge brief{count === 1 ? " is" : "s are"} ready, built from your subjects
           and the Liverpool City Region&rsquo;s skills priorities.
         </p>
         <div className="mt-5">

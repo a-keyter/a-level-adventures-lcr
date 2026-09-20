@@ -33,7 +33,7 @@ export const Route = createFileRoute("/subjects")({
 
 const LOADING_MESSAGES = [
   "Reading the Liverpool City Region skills plan...",
-  "Looking for where your four subjects overlap...",
+  "Looking for where your subjects overlap...",
   "Checking which sectors are growing across the city region...",
   "Sketching four research quests just for you...",
 ];
