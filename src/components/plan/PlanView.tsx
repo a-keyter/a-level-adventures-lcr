@@ -1,31 +1,22 @@
-import { Download, Clock, Users, ShieldCheck, Flag, Megaphone, Sparkle } from "lucide-react";
+import {
+  Download,
+  Clock,
+  Users,
+  ShieldCheck,
+  Flag,
+  Megaphone,
+  Sparkle,
+  HelpCircle,
+  Building2,
+  CalendarDays,
+  Share2,
+} from "lucide-react";
 import { ArcadeButton } from "@/components/arcade/ArcadeButton";
+import { ArcadeDisclosure } from "@/components/arcade/ArcadeDisclosure";
 import { PixelHeading } from "@/components/arcade/PixelHeading";
 import { downloadPlanPdf } from "@/components/plan/planPdf";
 import type { ProjectIdea, ProjectPlan } from "@/lib/adventure-types";
 import type { ReactNode } from "react";
-
-function Block({
-  title,
-  icon,
-  children,
-}: {
-  title: string;
-  icon?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <section className="arcade-panel p-5">
-      <div className="mb-4 flex items-center gap-2">
-        {icon ? <span className="text-accent">{icon}</span> : null}
-        <h3 className="font-display text-highlight text-[0.65rem] tracking-widest uppercase">
-          {title}
-        </h3>
-      </div>
-      {children}
-    </section>
-  );
-}
 
 function List({ items }: { items: string[] }) {
   return (
@@ -72,15 +63,29 @@ export function PlanView({
         </ArcadeButton>
       </div>
 
-      <Block title="Time commitment" icon={<Clock className="h-4 w-4" />}>
-        <p className="text-muted-foreground text-sm">{plan.weeklyCommitment}</p>
-      </Block>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="arcade-inset p-4">
+          <Clock className="text-accent mb-3 h-5 w-5" aria-hidden />
+          <p className="font-display text-highlight text-[0.6rem] uppercase">Time commitment</p>
+          <p className="text-muted-foreground mt-2 text-sm">{plan.weeklyCommitment}</p>
+        </div>
+        <div className="arcade-inset p-4">
+          <HelpCircle className="text-accent mb-3 h-5 w-5" aria-hidden />
+          <p className="font-display text-highlight text-[0.6rem] uppercase">Research questions</p>
+          <p className="text-muted-foreground mt-2 text-sm">{plan.researchQuestions.length} to explore</p>
+        </div>
+        <div className="arcade-inset p-4">
+          <CalendarDays className="text-accent mb-3 h-5 w-5" aria-hidden />
+          <p className="font-display text-highlight text-[0.6rem] uppercase">Quest length</p>
+          <p className="text-muted-foreground mt-2 text-sm">{plan.timeline.length} weeks</p>
+        </div>
+      </div>
 
-      <Block title="Research questions">
+      <ArcadeDisclosure title="Research questions" value="research" icon={<HelpCircle className="h-4 w-4" />} summary="Questions to guide your investigation.">
         <List items={plan.researchQuestions} />
-      </Block>
+      </ArcadeDisclosure>
 
-      <Block title="Local organisations to approach">
+      <ArcadeDisclosure title="Local organisations to approach" value="partners" icon={<Building2 className="h-4 w-4" />} summary={`${plan.localPartners.length} possible partners and a first step for each.`}>
         <ul className="flex flex-col gap-3">
           {plan.localPartners.map((partner) => (
             <li key={partner.name} className="arcade-inset p-4">
@@ -97,15 +102,15 @@ export function PlanView({
           Always double-check names and contact details before getting in touch, and ask a teacher to
           look over your message first.
         </p>
-      </Block>
+      </ArcadeDisclosure>
 
-      <Block title="A message you could send" icon={<Megaphone className="h-4 w-4" />}>
+      <ArcadeDisclosure title="A message you could send" value="message" icon={<Megaphone className="h-4 w-4" />} summary="A short starting point for contacting a partner.">
         <p className="arcade-inset text-muted-foreground p-4 text-sm whitespace-pre-line">
           {plan.outreachMessage}
         </p>
-      </Block>
+      </ArcadeDisclosure>
 
-      <Block title="Week by week">
+      <ArcadeDisclosure title="Week by week" value="timeline" icon={<CalendarDays className="h-4 w-4" />} summary={`${plan.timeline.length}-week mission timeline.`}>
         <ol className="flex flex-col gap-3">
           {plan.timeline.map((week) => (
             <li key={week.week} className="arcade-inset p-4">
@@ -116,9 +121,9 @@ export function PlanView({
             </li>
           ))}
         </ol>
-      </Block>
+      </ArcadeDisclosure>
 
-      <Block title="Who does what" icon={<Users className="h-4 w-4" />}>
+      <ArcadeDisclosure title="Who does what" value="roles" icon={<Users className="h-4 w-4" />} summary={`${plan.teamRoles.length} suggested roles for your team.`}>
         <ul className="grid gap-3 sm:grid-cols-2">
           {plan.teamRoles.map((role) => (
             <li key={role.role} className="arcade-inset p-4">
@@ -127,23 +132,23 @@ export function PlanView({
             </li>
           ))}
         </ul>
-      </Block>
+      </ArcadeDisclosure>
 
-      <Block title="Ethics and safety" icon={<ShieldCheck className="h-4 w-4" />}>
+      <ArcadeDisclosure title="Ethics and safety" value="safety" icon={<ShieldCheck className="h-4 w-4" />} summary="Checks to keep your research respectful and safe.">
         <List items={plan.ethicsAndSafety} />
-      </Block>
+      </ArcadeDisclosure>
 
-      <Block title="What finished looks like" icon={<Flag className="h-4 w-4" />}>
+      <ArcadeDisclosure title="What finished looks like" value="finished" icon={<Flag className="h-4 w-4" />} summary="Your finish-line checklist.">
         <List items={plan.whatDoneLooksLike} />
-      </Block>
+      </ArcadeDisclosure>
 
-      <Block title="Sharing your findings">
+      <ArcadeDisclosure title="Sharing your findings" value="sharing" icon={<Share2 className="h-4 w-4" />} summary="Ways to share what you discover locally.">
         <List items={plan.sharingYourFindings} />
-      </Block>
+      </ArcadeDisclosure>
 
-      <Block title="Keeping it manageable" icon={<Sparkle className="h-4 w-4" />}>
+      <ArcadeDisclosure title="Keeping it manageable" value="manageable" icon={<Sparkle className="h-4 w-4" />} summary="Practical ways to stay within your weekly limit.">
         <List items={plan.keepingItManageable} />
-      </Block>
+      </ArcadeDisclosure>
     </div>
   );
 }

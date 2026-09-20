@@ -47,10 +47,11 @@ export function SubjectPicker({
     <div className="flex flex-col gap-6 pb-40">
       <div className="arcade-panel p-5 sm:p-6">
         <PixelHeading as="h2">Choose your subjects</PixelHeading>
-        <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
-          Pick three or four A levels you are studying, or thinking about studying, at a Liverpool
-          City Region college or sixth form. Your party decides which adventures unlock.
-        </p>
+        <div className="mt-4 grid gap-2 sm:grid-cols-3" aria-label="Selection steps">
+          <div className="arcade-inset p-3 text-xs"><span className="text-highlight font-display block text-[0.55rem]">01</span><span className="text-muted-foreground mt-1 block">Pick 3 or 4 subjects</span></div>
+          <div className="arcade-inset p-3 text-xs"><span className="text-highlight font-display block text-[0.55rem]">02</span><span className="text-muted-foreground mt-1 block">Build your party</span></div>
+          <div className="arcade-inset p-3 text-xs"><span className="text-highlight font-display block text-[0.55rem]">03</span><span className="text-muted-foreground mt-1 block">Unlock your quests</span></div>
+        </div>
 
         <div className="relative mt-5">
           <Search
@@ -116,6 +117,10 @@ export function SubjectPicker({
           </section>
         ))}
       </div>
+
+      <p className="text-muted-foreground sr-only" aria-live="polite" aria-atomic="true">
+        {chosen.length} of 3 required subjects selected. {full ? "All four slots are full." : ""}
+      </p>
 
       <div className="border-border bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t-2 backdrop-blur">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 py-4 sm:px-6">
