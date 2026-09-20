@@ -7,7 +7,6 @@ import { z } from "zod";
 import { ArcadeFrame } from "@/components/arcade/ArcadeFrame";
 import { LoadingQuest } from "@/components/arcade/LoadingQuest";
 import { PixelHeading } from "@/components/arcade/PixelHeading";
-import { SubjectSlots } from "@/components/subjects/SubjectSlots";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectDialog } from "@/components/projects/ProjectDialog";
 import { chooseProject, getAdventure } from "@/lib/adventure.functions";
@@ -86,9 +85,9 @@ function QuestsScreen() {
         <>
           <div className="arcade-panel mb-6 p-5 sm:p-6">
             <PixelHeading as="h2">Your four quests</PixelHeading>
-            <div className="mt-4">
-              <SubjectSlots chosen={data.subjects} />
-            </div>
+            <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
+              Tap on any of the cards for a project idea related to your A levels.
+            </p>
           </div>
 
 
@@ -103,7 +102,6 @@ function QuestsScreen() {
               <ProjectCard
                 key={idea.title}
                 idea={idea}
-                index={index}
                 onOpen={() => setOpenIndex(index)}
               />
             ))}
