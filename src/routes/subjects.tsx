@@ -44,31 +44,60 @@ function SubjectsScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [chosen, setChosen] = useState<string[]>([]);
   const [ready, setReady] = useState<{ selectionId: string; count: number } | null>(null);
+  const [dismissed, setDismissed] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const goToQuests = () => {
+    if (!ready) return;
+    void navigate({
+      to: "/quests/$selectionId",
+      params: { selectionId: ready.selectionId },
+    });
+  };
 
   return (
     <ArcadeFrame>
-      <Link
-        to="/"
-        className="text-muted-foreground hover:text-accent mb-6 inline-flex items-center gap-1 text-xs uppercase"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        Title screen
-      </Link>
+      {submitting || ready ? (
+        <button
+          type="button"
+          onClick={() => {
+            setReady(null);
+            setDismissed(false);
+            setSubmitting(false);
+          }}
+          className="text-muted-foreground hover:text-accent mb-6 inline-flex items-center gap-1 text-xs uppercase"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Change subjects
+        </button>
+      ) : (
+        <Link
+          to="/"
+          className="text-muted-foreground hover:text-accent mb-6 inline-flex items-center gap-1 text-xs uppercase"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Title screen
+        </Link>
+      )}
 
       {submitting || ready ? (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5 pb-8">
           <SectorFlower chosen={chosen} />
           {submitting ? <LoadingQuest messages={LOADING_MESSAGES} /> : null}
           {ready ? (
+            <div className="arcade-panel flex flex-col items-center gap-3 p-5 text-center">
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                {ready.count} challenge brief{ready.count === 1 ? " is" : "s are"} ready whenever
+                you are.
+              </p>
+              <ArcadeButton onClick={goToQuests}>View challenge briefs</ArcadeButton>
+            </div>
+          ) : null}
+          {ready && !dismissed ? (
             <QuestReadyDialog
               count={ready.count}
-              onContinue={() => {
-                void navigate({
-                  to: "/quests/$selectionId",
-                  params: { selectionId: ready.selectionId },
-                });
-              }}
+              onContinue={goToQuests}
+              onClose={() => setDismissed(true)}
             />
           ) : null}
         </div>
