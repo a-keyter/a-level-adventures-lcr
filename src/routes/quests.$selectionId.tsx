@@ -9,6 +9,7 @@ import { PixelHeading } from "@/components/arcade/PixelHeading";
 import { SubjectSlots } from "@/components/subjects/SubjectSlots";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectDialog } from "@/components/projects/ProjectDialog";
+import { SectorFlower } from "@/components/sectors/SectorFlower";
 import { chooseProject, getAdventure } from "@/lib/adventure.functions";
 
 export const Route = createFileRoute("/quests/$selectionId")({
@@ -89,6 +90,10 @@ function QuestsScreen() {
             <div className="mt-4">
               <SubjectSlots chosen={data.subjects} />
             </div>
+          </div>
+
+          <div className="mb-6">
+            <SectorFlower chosen={data.subjects} />
           </div>
 
           {error ? (
