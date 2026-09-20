@@ -128,6 +128,19 @@ export function SubjectPicker({
           </ArcadeButton>
         </div>
       </div>
+
+      {open ? (
+        <SubjectDialog
+          subject={open}
+          selected={chosen.includes(open.name)}
+          full={full}
+          onClose={() => setOpen(null)}
+          onToggle={() => {
+            toggle(open.name);
+            setOpen(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
