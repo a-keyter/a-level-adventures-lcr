@@ -104,6 +104,14 @@ function PlanScreen() {
           </div>
 
           <SupportOptIn choiceId={data.choiceId} />
+
+          <div className="flex justify-center">
+            <Link to="/" onClick={() => window.scrollTo({ top: 0 })}>
+              <ArcadeButton type="button" variant="ghost" size="lg" className="w-full sm:w-auto">
+                Start again
+              </ArcadeButton>
+            </Link>
+          </div>
         </div>
       )}
     </ArcadeFrame>
