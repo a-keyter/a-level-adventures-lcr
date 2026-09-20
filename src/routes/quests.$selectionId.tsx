@@ -86,10 +86,6 @@ function QuestsScreen() {
         <>
           <div className="arcade-panel mb-6 p-5 sm:p-6">
             <PixelHeading as="h2">Your four quests</PixelHeading>
-            <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
-              Each quest sits where your subjects meet a real skills or growth need in the
-              Liverpool City Region. Open one to read the brief and see where it could lead.
-            </p>
             <div className="mt-4">
               <SubjectSlots chosen={data.subjects} />
             </div>
