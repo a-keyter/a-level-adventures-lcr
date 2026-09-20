@@ -91,7 +91,7 @@ const reasoningOptions = {
 /** Create (or reuse) a run for four chosen subjects and return its ideas. */
 export const startAdventure = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
-    z.object({ subjects: z.array(z.string()).length(4) }).parse(input),
+    z.object({ subjects: z.array(z.string()).min(3).max(4) }).parse(input),
   )
   .handler(async ({ data }) => {
     const db = await getDb();
@@ -123,16 +123,16 @@ export const startAdventure = createServerFn({ method: "POST" })
           LSIP_CONTEXT,
         ].join("\n"),
         prompt: [
-          `The student is studying these four A levels: ${data.subjects.join(", ")}.`,
+          `The student is studying these ${data.subjects.length} A levels: ${data.subjects.join(", ")}.`,
           "",
           "Propose exactly four distinct, genuinely multi-disciplinary research projects that a small group",
           "of sixth-form students could realistically run alongside their studies. Each project must sit at the",
-          "intersection of all four subjects and address a real economic or skills need in the Liverpool City Region.",
+          "intersection of all of their subjects and address a real economic or skills need in the Liverpool City Region.",
           "Cover four different LSIP priority areas across the four projects.",
           "",
           "For each project give: a punchy title (six words or fewer); a one-line strapline; the LSIP sector it sits in;",
           "a two-to-three sentence summary; why it matters to the Liverpool City Region; one entry in subjectLinks for",
-          "each of the four subjects explaining its contribution; three research questions; and whereThisCouldLead with",
+          "each of their subjects explaining its contribution; three research questions; and whereThisCouldLead with",
           "three degree routes, three apprenticeship or technical routes, four job roles and four local employers or",
           "organisations.",
           "Return exactly four projects.",

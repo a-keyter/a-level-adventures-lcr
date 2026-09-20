@@ -43,7 +43,7 @@ export function SectorFlower({ chosen }: { chosen: string[] }) {
       <PixelHeading as="h2">Where your subjects land</PixelHeading>
       <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
         Each petal is a priority sector from the Liverpool City Region Local Skills Improvement
-        Plan. Every band inside a petal is a role, and it fills up where one of your four subjects
+        Plan. Every band inside a petal is a role, and it fills up where one of your subjects
         overlaps with the skills that role needs. Tap a petal to read the roles.
       </p>
 
