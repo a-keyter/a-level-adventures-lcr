@@ -47,7 +47,7 @@ export function SectorFlower({ chosen }: { chosen: string[] }) {
         overlaps with the skills that role needs. Tap a petal to read the roles.
       </p>
 
-      <div className="mt-5 flex flex-col items-center gap-5 lg:flex-row-reverse lg:items-start">
+      <div className="mt-5 flex flex-col items-center gap-5 lg:flex-row lg:items-start">
         <svg
           style={{ order: 2 }}
           viewBox={`0 0 ${SIZE} ${SIZE}`}
@@ -128,7 +128,7 @@ export function SectorFlower({ chosen }: { chosen: string[] }) {
           </text>
         </svg>
 
-        <ul className="flex w-full flex-col gap-2">
+        <ul className="flex w-full flex-col gap-2" style={{ order: 1 }}>
           {[...overlaps]
             .sort((a, b) => b.points - a.points)
             .map((overlap) => (
