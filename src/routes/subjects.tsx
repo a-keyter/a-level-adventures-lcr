@@ -83,12 +83,14 @@ function SubjectsScreen() {
             submitting={submitting}
             onSubmit={async (subjects) => {
               setError(null);
+              setChosen(subjects);
               setSubmitting(true);
               try {
                 const result = await begin({ data: { subjects } });
-                await navigate({
-                  to: "/quests/$selectionId",
-                  params: { selectionId: result.selectionId },
+                setSubmitting(false);
+                setReady({
+                  selectionId: result.selectionId,
+                  count: result.ideas?.length ?? 4,
                 });
               } catch {
                 setSubmitting(false);

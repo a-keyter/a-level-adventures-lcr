@@ -92,9 +92,6 @@ function QuestsScreen() {
             </div>
           </div>
 
-          <div className="mb-6">
-            <SectorFlower chosen={data.subjects} />
-          </div>
 
           {error ? (
             <p className="border-destructive bg-destructive/15 text-foreground mb-5 rounded-md border-2 p-4 text-sm">
