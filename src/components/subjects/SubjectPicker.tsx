@@ -82,21 +82,21 @@ export function SubjectPicker({
       ) : null}
 
       <div className="flex flex-col gap-6">
-        {grouped.map(([group, names]) => (
+        {grouped.map(([group, subjects]) => (
           <section key={group}>
             <h3 className="font-display text-accent mb-3 text-[0.6rem] tracking-widest uppercase">
               {group}
             </h3>
             <div className="flex flex-wrap gap-2">
-              {names.map((name) => {
+              {subjects.map((subject) => {
+                const name = subject.name;
                 const selected = chosen.includes(name);
-                const blocked = !selected && full;
+                const blocked = false;
                 return (
                   <button
                     key={name}
                     type="button"
-                    onClick={() => toggle(name)}
-                    disabled={blocked}
+                    onClick={() => setOpen(subject)}
                     aria-pressed={selected}
                     className={cn(
                       "rounded-md border-2 px-3 py-2.5 text-left text-sm transition-colors",
