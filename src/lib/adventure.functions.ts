@@ -172,19 +172,16 @@ export const startAdventure = createServerFn({ method: "POST" })
 const knownSubjects = new Set(SUBJECTS.map((subject) => subject.name));
 
 /**
- * Bonus round: record the two extra A levels a player would add if they had a
+ * Bonus round: record the one extra A level a player would add if they had a
  * spare option and were guaranteed a job in a related field. This is stored
  * against the run only and never changes the cached project ideas.
  */
-export const saveBonusSubjects = createServerFn({ method: "POST" })
+export const savePassionSubject = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z
       .object({
         selectionId: z.string().uuid(),
-        subjects: z
-          .array(z.string().refine((name) => knownSubjects.has(name)))
-          .length(2)
-          .refine((subjects) => new Set(subjects).size === subjects.length),
+        subject: z.string().refine((name) => knownSubjects.has(name)),
       })
       .parse(input),
   )
@@ -197,15 +194,15 @@ export const saveBonusSubjects = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (!row) throw new Error("That adventure could not be found.");
-    if (data.subjects.some((subject) => row.subjects.includes(subject))) {
-      throw new Error("Bonus picks must be different from your chosen subjects.");
+    if (row.subjects.includes(data.subject)) {
+      throw new Error("Your passion subject must be different from your chosen subjects.");
     }
 
     const { error } = await db
       .from("selections")
-      .update({ bonus_subjects: data.subjects })
+      .update({ passion_subject: data.subject })
       .eq("id", data.selectionId);
-    if (error) throw new Error("We couldn't save your bonus picks. Please try again.");
+    if (error) throw new Error("We couldn't save your passion subject. Please try again.");
 
     return { ok: true };
   });

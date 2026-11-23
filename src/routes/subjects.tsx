@@ -9,13 +9,13 @@ import { LoadingQuest } from "@/components/arcade/LoadingQuest";
 import { SubjectPicker } from "@/components/subjects/SubjectPicker";
 import { SectorFlower } from "@/components/sectors/SectorFlower";
 import { QuestReadyDialog } from "@/components/quests/QuestReadyDialog";
-import { saveBonusSubjects, startAdventure } from "@/lib/adventure.functions";
+import { savePassionSubject, startAdventure } from "@/lib/adventure.functions";
 import { SUBJECTS } from "@/data/subjects";
 
 export const Route = createFileRoute("/subjects")({
   validateSearch: z.object({
     subjects: z.string().optional(),
-    bonus: z.string().optional(),
+    passion: z.string().optional(),
   }),
   head: () => ({
     meta: [
@@ -46,23 +46,23 @@ const LOADING_MESSAGES = [
 ];
 
 const BONUS_STEPS = [
-  "Imagine two extra slots",
+  "Imagine one extra slot",
   "A related job is guaranteed",
-  "Pick your two wildcards",
+  "Pick your passion subject",
 ];
 
 const QUEST_ERROR =
   "Something went wrong while building your quests. Please try again in a moment.";
 
 function SubjectsScreen() {
-  const { subjects: subjectsQuery, bonus: bonusQuery } = Route.useSearch();
+  const { subjects: subjectsQuery, passion: passionQuery } = Route.useSearch();
   const navigate = useNavigate();
   const begin = useServerFn(startAdventure);
-  const saveBonus = useServerFn(saveBonusSubjects);
+  const savePassion = useServerFn(savePassionSubject);
   const [submitting, setSubmitting] = useState(false);
   const [chosen, setChosen] = useState<string[]>(() => parseSubjects(subjectsQuery));
-  const [bonus, setBonus] = useState<string[] | null>(() =>
-    parseBonus(bonusQuery, parseSubjects(subjectsQuery)),
+  const [passion, setPassion] = useState<string | null>(() =>
+    parsePassion(passionQuery, parseSubjects(subjectsQuery)),
   );
   const [ready, setReady] = useState<{
     selectionId: string;
@@ -72,7 +72,7 @@ function SubjectsScreen() {
   const [dismissed, setDismissed] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const startedQueryRef = useRef<string | null>(null);
-  const savedBonusRef = useRef<string | null>(null);
+  const savedPassionRef = useRef<string | null>(null);
   // Bumped whenever a run starts or is abandoned, so late results are ignored.
   const runRef = useRef(0);
 
@@ -104,10 +104,10 @@ function SubjectsScreen() {
   }, [subjectsQuery]);
 
   useEffect(() => {
-    if (!ready || !bonus) return;
+    if (!ready || !passion) return;
     const timer = window.setTimeout(() => setDismissed(false), 30_000);
     return () => window.clearTimeout(timer);
-  }, [ready, bonus]);
+  }, [ready, passion]);
 
   useEffect(() => {
     const restoredSubjects = parseSubjects(subjectsQuery);
@@ -123,22 +123,22 @@ function SubjectsScreen() {
 
     startedQueryRef.current = subjectsQuery ?? null;
     setChosen(restoredSubjects);
-    setBonus(parseBonus(bonusQuery, restoredSubjects));
+    setPassion(parsePassion(passionQuery, restoredSubjects));
     startRun(restoredSubjects);
-  }, [bonusQuery, ready, startRun, subjectsQuery, submitting]);
+  }, [passionQuery, ready, startRun, subjectsQuery, submitting]);
 
-  // Save the bonus picks once both they and the run's selection exist.
+  // Save the passion subject once both it and the run's selection exist.
   useEffect(() => {
-    if (!ready || !bonus) return;
-    const key = `${ready.selectionId}|${bonus.join(",")}`;
-    if (savedBonusRef.current === key) return;
-    savedBonusRef.current = key;
-    void saveBonus({ data: { selectionId: ready.selectionId, subjects: bonus } }).catch(
+    if (!ready || !passion) return;
+    const key = `${ready.selectionId}|${passion}`;
+    if (savedPassionRef.current === key) return;
+    savedPassionRef.current = key;
+    void savePassion({ data: { selectionId: ready.selectionId, subject: passion } }).catch(
       (saveError: unknown) => {
-        console.error("Could not save bonus subjects", saveError);
+        console.error("Could not save passion subject", saveError);
       },
     );
-  }, [bonus, ready, saveBonus]);
+  }, [passion, ready, savePassion]);
 
   const goToQuests = () => {
     if (!ready) return;
@@ -159,7 +159,7 @@ function SubjectsScreen() {
           onClick={() => {
             runRef.current += 1;
             setReady(null);
-            setBonus(null);
+            setPassion(null);
             setDismissed(false);
             setSubmitting(false);
             void navigate({ to: "/subjects", search: {} });
@@ -193,7 +193,7 @@ function SubjectsScreen() {
               const query = subjects.join(",");
               setError(null);
               setChosen(subjects);
-              setBonus(null);
+              setPassion(null);
               setDismissed(true);
               window.scrollTo({ top: 0, behavior: "auto" });
               startedQueryRef.current = query;
@@ -202,54 +202,56 @@ function SubjectsScreen() {
             }}
           />
         </>
-      ) : !bonus ? (
+      ) : !passion ? (
         <SubjectPicker
-          key="bonus"
+          key="passion"
           submitting={false}
-          min={2}
-          max={2}
+          min={1}
+          max={1}
           exclude={chosen}
           title="Bonus round"
           intro={
             <div className="mt-3 flex flex-col gap-2 text-sm leading-relaxed">
               <p className="text-muted-foreground">
-                Imagine your timetable had room for two more A levels, and you were guaranteed a job
-                in a field linked to each one. Which two would you add?
+                Imagine your timetable had room for one more A level, and you were guaranteed a job
+                in a field linked to it. Which subject would you add?
               </p>
               <p className="text-accent text-xs" aria-live="polite">
                 {ready
-                  ? "Your challenge briefs are ready. Lock in your bonus picks to see them."
+                  ? "Your challenge briefs are ready. Lock in your passion subject to see them."
                   : "Your challenge briefs are being built while you choose."}
               </p>
             </div>
           }
           steps={BONUS_STEPS}
-          submitLabel="Lock in bonus picks"
-          slotLabel="Bonus"
-          fullLabel="Both bonus slots are full"
-          onSubmit={(picks) => {
-            setBonus(picks);
+          submitLabel="Lock in passion subject"
+          slotLabel="Passion subject"
+          fullLabel="Your passion slot is full"
+          onSubmit={([pick]) => {
+            if (!pick) return;
+            setPassion(pick);
             window.scrollTo({ top: 0, behavior: "auto" });
             void navigate({
               to: "/subjects",
-              search: { subjects: chosen.join(","), bonus: picks.join(",") },
+              search: { subjects: chosen.join(","), passion: pick },
               replace: true,
             });
           }}
         />
       ) : (
         <div className="flex flex-col gap-5 pb-8">
-          <div className="arcade-panel p-5 sm:p-6">
-            <p className="font-display text-highlight text-[0.6rem] tracking-widest uppercase">
-              Bonus picks locked in
-            </p>
-            <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-              With a spare option and a guaranteed job to match, you&rsquo;d add{" "}
-              <span className="text-foreground">{bonus[0]}</span> and{" "}
-              <span className="text-foreground">{bonus[1]}</span>.
-            </p>
-          </div>
           <SectorFlower chosen={chosen} />
+          <SectorFlower
+            chosen={[passion]}
+            title="Ways to pursue your passion subject"
+            intro={
+              <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
+                With a spare option and a guaranteed job to match, you&rsquo;d add{" "}
+                <span className="text-foreground">{passion}</span>. Here&rsquo;s where it lines up
+                with roles employers across the city region need.
+              </p>
+            }
+          />
           {submitting ? <LoadingQuest messages={LOADING_MESSAGES} /> : null}
           {ready ? (
             <div className="arcade-panel flex flex-col items-center gap-3 p-5 text-center">
@@ -280,8 +282,9 @@ function parseSubjects(value: string | undefined) {
     : [];
 }
 
-/** Restore two bonus picks from the URL, ignoring anything already chosen. */
-function parseBonus(value: string | undefined, chosen: string[]) {
-  const picks = parseSubjects(value).filter((subject) => !chosen.includes(subject));
-  return picks.length === 2 ? picks : null;
+/** Restore the passion subject from the URL, ignoring one already chosen. */
+function parsePassion(value: string | undefined, chosen: string[]) {
+  return value && SUBJECTS.some((subject) => subject.name === value) && !chosen.includes(value)
+    ? value
+    : null;
 }

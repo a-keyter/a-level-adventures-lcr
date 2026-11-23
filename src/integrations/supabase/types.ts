@@ -90,24 +90,24 @@ export type Database = {
       }
       selections: {
         Row: {
-          bonus_subjects: string[] | null
           combination_id: string
           created_at: string
           id: string
+          passion_subject: string | null
           subjects: string[]
         }
         Insert: {
-          bonus_subjects?: string[] | null
           combination_id: string
           created_at?: string
           id?: string
+          passion_subject?: string | null
           subjects: string[]
         }
         Update: {
-          bonus_subjects?: string[] | null
           combination_id?: string
           created_at?: string
           id?: string
+          passion_subject?: string | null
           subjects?: string[]
         }
         Relationships: [
