@@ -7,12 +7,14 @@ export function SubjectDialog({
   subject,
   selected,
   full,
+  fullLabel = "All four slots are full",
   onClose,
   onToggle,
 }: {
   subject: Subject;
   selected: boolean;
   full: boolean;
+  fullLabel?: string;
   onClose: () => void;
   onToggle: () => void;
 }) {
@@ -84,11 +86,7 @@ export function SubjectDialog({
             variant={selected ? "ghost" : "primary"}
             className="w-full"
           >
-            {selected
-              ? "Remove from your list"
-              : blocked
-                ? "All four slots are full"
-                : "Add to your list"}
+            {selected ? "Remove from your list" : blocked ? fullLabel : "Add to your list"}
           </ArcadeButton>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Search, X } from "lucide-react";
 import { SUBJECTS, type Subject } from "@/data/subjects";
 import { ArcadeButton } from "@/components/arcade/ArcadeButton";
@@ -7,14 +7,42 @@ import { SubjectSlots } from "@/components/subjects/SubjectSlots";
 import { SubjectDialog } from "@/components/subjects/SubjectDialog";
 import { cn } from "@/lib/utils";
 
+const NO_SUBJECTS: string[] = [];
+const DEFAULT_STEPS = ["Pick 3 or 4 subjects", "Build your party", "Unlock your quests"];
+
 export function SubjectPicker({
   onSubmit,
   submitting,
   initialChosen = [],
+  min = 3,
+  max = 4,
+  exclude = NO_SUBJECTS,
+  title = "Choose your subjects",
+  intro,
+  steps = DEFAULT_STEPS,
+  submitLabel = "Begin adventure",
+  submittingLabel = "Generating...",
+  slotLabel = "Slot",
+  fullLabel = "All four slots are full",
+  optionalHint = "You can add a fourth subject, or begin with three.",
 }: {
   onSubmit: (subjects: string[]) => void;
   submitting: boolean;
   initialChosen?: string[];
+  /** Fewest subjects needed before submitting. */
+  min?: number;
+  /** Most subjects that can be chosen. */
+  max?: number;
+  /** Subjects that cannot be picked here, for example ones already chosen. */
+  exclude?: string[];
+  title?: string;
+  intro?: ReactNode;
+  steps?: string[];
+  submitLabel?: string;
+  submittingLabel?: string;
+  slotLabel?: string;
+  fullLabel?: string;
+  optionalHint?: string;
 }) {
   const [query, setQuery] = useState("");
   const [chosen, setChosen] = useState<string[]>(initialChosen);
@@ -24,34 +52,41 @@ export function SubjectPicker({
     const needle = query.trim().toLowerCase();
     const map = new Map<string, Subject[]>();
     for (const subject of SUBJECTS) {
+      if (exclude.includes(subject.name)) continue;
       if (needle && !subject.name.toLowerCase().includes(needle)) continue;
       const list = map.get(subject.group) ?? [];
       list.push(subject);
       map.set(subject.group, list);
     }
     return Array.from(map.entries());
-  }, [query]);
+  }, [exclude, query]);
 
   const toggle = (name: string) => {
     setChosen((current) => {
       if (current.includes(name)) return current.filter((s) => s !== name);
-      if (current.length >= 4) return current;
+      if (current.length >= max) return current;
       return [...current, name];
     });
   };
 
-  const full = chosen.length === 4;
-  const ready = chosen.length >= 3;
+  const full = chosen.length >= max;
+  const ready = chosen.length >= min;
 
   return (
     <div className="flex flex-col gap-6 pb-40">
       <div className="arcade-panel p-5 sm:p-6">
-        <PixelHeading as="h2">Choose your subjects</PixelHeading>
-        <div className="mt-4 grid gap-2 sm:grid-cols-3" aria-label="Selection steps">
-          <div className="arcade-inset p-3 text-xs"><span className="text-highlight font-display block text-[0.55rem]">01</span><span className="text-muted-foreground mt-1 block">Pick 3 or 4 subjects</span></div>
-          <div className="arcade-inset p-3 text-xs"><span className="text-highlight font-display block text-[0.55rem]">02</span><span className="text-muted-foreground mt-1 block">Build your party</span></div>
-          <div className="arcade-inset p-3 text-xs"><span className="text-highlight font-display block text-[0.55rem]">03</span><span className="text-muted-foreground mt-1 block">Unlock your quests</span></div>
-        </div>
+        <PixelHeading as="h2">{title}</PixelHeading>
+        {intro}
+        <ol className="mt-4 grid gap-2 sm:grid-cols-3" aria-label="Selection steps">
+          {steps.map((step, index) => (
+            <li key={step} className="arcade-inset p-3 text-xs">
+              <span className="text-highlight font-display block text-[0.55rem]">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span className="text-muted-foreground mt-1 block">{step}</span>
+            </li>
+          ))}
+        </ol>
 
         <div className="relative mt-5">
           <Search
@@ -119,12 +154,18 @@ export function SubjectPicker({
       </div>
 
       <p className="text-muted-foreground sr-only" aria-live="polite" aria-atomic="true">
-        {chosen.length} of 3 required subjects selected. {full ? "All four slots are full." : ""}
+        {chosen.length} of {min} required subjects selected. {full ? `${fullLabel}.` : ""}
       </p>
 
       <div className="border-border bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t-2 backdrop-blur">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 py-4 sm:px-6">
-          <SubjectSlots chosen={chosen} onRemove={toggle} />
+          <SubjectSlots
+            chosen={chosen}
+            onRemove={toggle}
+            required={min}
+            total={max}
+            slotLabel={slotLabel}
+          />
           <ArcadeButton
             type="button"
             size="md"
@@ -133,15 +174,13 @@ export function SubjectPicker({
             className="w-full"
           >
             {submitting
-              ? "Generating..."
+              ? submittingLabel
               : ready
-                ? "Begin adventure"
-                : `Pick ${3 - chosen.length} more`}
+                ? submitLabel
+                : `Pick ${min - chosen.length} more`}
           </ArcadeButton>
           {ready && !full ? (
-            <p className="text-muted-foreground text-center text-xs">
-              You can add a fourth subject, or begin with three.
-            </p>
+            <p className="text-muted-foreground text-center text-xs">{optionalHint}</p>
           ) : null}
         </div>
       </div>
@@ -151,6 +190,7 @@ export function SubjectPicker({
           subject={open}
           selected={chosen.includes(open.name)}
           full={full}
+          fullLabel={fullLabel}
           onClose={() => setOpen(null)}
           onToggle={() => {
             toggle(open.name);

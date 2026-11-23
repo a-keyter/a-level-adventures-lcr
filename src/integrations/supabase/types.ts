@@ -90,18 +90,21 @@ export type Database = {
       }
       selections: {
         Row: {
+          bonus_subjects: string[] | null
           combination_id: string
           created_at: string
           id: string
           subjects: string[]
         }
         Insert: {
+          bonus_subjects?: string[] | null
           combination_id: string
           created_at?: string
           id?: string
           subjects: string[]
         }
         Update: {
+          bonus_subjects?: string[] | null
           combination_id?: string
           created_at?: string
           id?: string

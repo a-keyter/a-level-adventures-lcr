@@ -4,13 +4,20 @@ import { cn } from "@/lib/utils";
 export function SubjectSlots({
   chosen,
   onRemove,
+  required = 3,
+  total = 4,
+  slotLabel = "Slot",
 }: {
   chosen: string[];
   onRemove?: (name: string) => void;
+  /** Slots beyond this number are labelled as optional. */
+  required?: number;
+  total?: number;
+  slotLabel?: string;
 }) {
   return (
-    <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-      {[0, 1, 2, 3].map((slot) => {
+    <ul className={cn("grid grid-cols-2 gap-2", total >= 4 && "sm:grid-cols-4")}>
+      {Array.from({ length: total }, (_, slot) => {
         const name = chosen[slot];
         return (
           <li
@@ -21,7 +28,7 @@ export function SubjectSlots({
             )}
           >
             <span className="truncate">
-              {name ?? (slot === 3 ? "Slot 4 (optional)" : `Slot ${slot + 1}`)}
+              {name ?? `${slotLabel} ${slot + 1}${slot >= required ? " (optional)" : ""}`}
             </span>
             {name && onRemove ? (
               <button

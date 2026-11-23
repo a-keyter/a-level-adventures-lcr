@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { comboKey } from "@/data/subjects";
+import { comboKey, SUBJECTS } from "@/data/subjects";
 import type { ProjectIdea, ProjectPlan } from "@/lib/adventure-types";
 
 const ideaSchema = z.object({
@@ -167,6 +167,47 @@ export const startAdventure = createServerFn({ method: "POST" })
       subjects: data.subjects,
       ideas,
     };
+  });
+
+const knownSubjects = new Set(SUBJECTS.map((subject) => subject.name));
+
+/**
+ * Bonus round: record the two extra A levels a player would add if they had a
+ * spare option and were guaranteed a job in a related field. This is stored
+ * against the run only and never changes the cached project ideas.
+ */
+export const saveBonusSubjects = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        selectionId: z.string().uuid(),
+        subjects: z
+          .array(z.string().refine((name) => knownSubjects.has(name)))
+          .length(2)
+          .refine((subjects) => new Set(subjects).size === subjects.length),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const db = await getDb();
+    const { data: row } = await db
+      .from("selections")
+      .select("id, subjects")
+      .eq("id", data.selectionId)
+      .maybeSingle();
+
+    if (!row) throw new Error("That adventure could not be found.");
+    if (data.subjects.some((subject) => row.subjects.includes(subject))) {
+      throw new Error("Bonus picks must be different from your chosen subjects.");
+    }
+
+    const { error } = await db
+      .from("selections")
+      .update({ bonus_subjects: data.subjects })
+      .eq("id", data.selectionId);
+    if (error) throw new Error("We couldn't save your bonus picks. Please try again.");
+
+    return { ok: true };
   });
 
 /** Load an existing run by its id. */

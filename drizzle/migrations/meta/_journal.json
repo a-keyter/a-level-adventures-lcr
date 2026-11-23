@@ -15,6 +15,13 @@
       "when": 1789820820079,
       "tag": "0001_lock_down_public_table_access",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795454228851,
+      "tag": "0002_add_selection_bonus_subjects",
+      "breakpoints": true
     }
   ]
 }
