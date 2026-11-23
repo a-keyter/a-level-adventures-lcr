@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { computeSectorOverlaps, type SectorOverlap } from "@/data/lsip-sectors";
 import { PixelHeading } from "@/components/arcade/PixelHeading";
 import { SectorDialog } from "@/components/sectors/SectorDialog";
@@ -31,15 +31,7 @@ function band(r0: number, r1: number, a0: number, a1: number) {
   ].join(" ");
 }
 
-export function SectorFlower({
-  chosen,
-  title = "Where these subjects might take you",
-  intro,
-}: {
-  chosen: string[];
-  title?: string;
-  intro?: ReactNode;
-}) {
+export function SectorFlower({ chosen }: { chosen: string[] }) {
   const overlaps = computeSectorOverlaps(chosen);
   const [open, setOpen] = useState<SectorOverlap | null>(null);
   const step = 360 / overlaps.length;
@@ -48,14 +40,7 @@ export function SectorFlower({
 
   return (
     <div className="arcade-panel p-5 sm:p-6">
-      <PixelHeading as="h2">{title}</PixelHeading>
-      {intro}
-      {total === 0 ? (
-        <p className="border-border bg-surface-2 text-muted-foreground mt-3 rounded-md border-2 p-3 text-sm leading-relaxed">
-          No direct matches with the region&rsquo;s priority roles yet. That doesn&rsquo;t rule
-          anything out: tap a sector to see what employers here are asking for.
-        </p>
-      ) : null}
+      <PixelHeading as="h2">Where these subjects might take you</PixelHeading>
 
       <div className="mt-5 flex flex-col items-center gap-5 lg:flex-row lg:items-start">
         <svg
@@ -63,7 +48,7 @@ export function SectorFlower({
           viewBox={`0 0 ${SIZE} ${SIZE}`}
           className="w-full max-w-[340px] shrink-0"
           role="img"
-          aria-label={`${title}: radar of ${total} overlap points between ${chosen.join(", ")} and Liverpool City Region sectors`}
+          aria-label={`Radar of ${total} overlap points between your subjects and Liverpool City Region sectors`}
         >
           {overlaps.map((overlap, index) => {
             const a0 = index * step + gap / 2;
