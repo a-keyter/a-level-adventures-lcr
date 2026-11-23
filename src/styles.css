@@ -6,8 +6,8 @@
 
 /*
  * A Level Adventures in the LCR — arcade design system.
- * Liverpool City Region Combined Authority colours (deep purple, magenta,
- * teal, sunshine yellow) reworked into a friendly retro-arcade skin.
+ * Carmel College colours (deep Carmel blue, sky blue,
+ * pale ice blue, warm cream) reworked into a friendly retro-arcade skin.
  */
 
 @theme inline {
@@ -43,53 +43,53 @@
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --font-display: "Press Start 2P", ui-monospace, monospace;
-  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
 :root {
   --radius: 0.5rem;
 
-  --background: oklch(0.21 0.11 300);
-  --foreground: oklch(0.97 0.012 300);
+  --background: oklch(0.24 0.06 235);
+  --foreground: oklch(0.96 0.015 70);
 
-  --surface: oklch(0.27 0.1 300);
-  --surface-2: oklch(0.32 0.1 300);
+  --surface: oklch(0.3 0.065 235);
+  --surface-2: oklch(0.35 0.07 235);
 
-  --card: oklch(0.27 0.1 300);
-  --card-foreground: oklch(0.97 0.012 300);
-  --popover: oklch(0.25 0.1 300);
-  --popover-foreground: oklch(0.97 0.012 300);
+  --card: oklch(0.3 0.065 235);
+  --card-foreground: oklch(0.96 0.015 70);
+  --popover: oklch(0.28 0.065 235);
+  --popover-foreground: oklch(0.96 0.015 70);
 
-  --primary: oklch(0.63 0.25 353);
-  --primary-foreground: oklch(0.99 0.005 300);
+  --primary: oklch(0.7 0.11 220);
+  --primary-foreground: oklch(0.2 0.05 235);
 
-  --secondary: oklch(0.36 0.1 300);
-  --secondary-foreground: oklch(0.97 0.012 300);
+  --secondary: oklch(0.38 0.07 235);
+  --secondary-foreground: oklch(0.96 0.015 70);
 
-  --muted: oklch(0.33 0.08 300);
-  --muted-foreground: oklch(0.79 0.045 300);
+  --muted: oklch(0.36 0.05 235);
+  --muted-foreground: oklch(0.84 0.03 220);
 
-  --accent: oklch(0.79 0.13 183);
-  --accent-foreground: oklch(0.2 0.08 220);
+  --accent: oklch(0.89 0.04 215);
+  --accent-foreground: oklch(0.24 0.06 235);
 
-  --highlight: oklch(0.86 0.16 88);
-  --highlight-foreground: oklch(0.24 0.09 60);
+  --highlight: oklch(0.93 0.07 90);
+  --highlight-foreground: oklch(0.25 0.05 235);
 
   --destructive: oklch(0.65 0.22 25);
-  --destructive-foreground: oklch(0.99 0.005 300);
+  --destructive-foreground: oklch(0.99 0.005 70);
 
-  --border: oklch(0.42 0.11 300);
-  --input: oklch(0.34 0.09 300);
-  --ring: oklch(0.79 0.13 183);
+  --border: oklch(0.47 0.08 230);
+  --input: oklch(0.36 0.06 235);
+  --ring: oklch(0.89 0.04 215);
 }
 
 .dark {
-  --background: oklch(0.17 0.09 300);
-  --surface: oklch(0.23 0.09 300);
-  --surface-2: oklch(0.28 0.09 300);
-  --card: oklch(0.23 0.09 300);
-  --popover: oklch(0.21 0.09 300);
+  --background: oklch(0.19 0.05 235);
+  --surface: oklch(0.25 0.055 235);
+  --surface-2: oklch(0.3 0.06 235);
+  --card: oklch(0.25 0.055 235);
+  --popover: oklch(0.23 0.055 235);
 }
 
 @layer base {

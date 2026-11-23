@@ -7,13 +7,13 @@ import { ArcadeFrame } from "@/components/arcade/ArcadeFrame";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "A Level Adventures in the LCR" },
+      { title: "A Level Adventures at Carmel College" },
       {
         name: "description",
         content:
-          "A retro choose-your-own-adventure for Liverpool City Region students: pick four A levels and discover research projects that match the region's real economic needs.",
+          "A retro choose-your-own-adventure for Carmel College students: pick four A levels and discover research projects that match the region's real economic needs.",
       },
-      { property: "og:title", content: "A Level Adventures in the LCR" },
+      { property: "og:title", content: "A Level Adventures at Carmel College" },
       {
         property: "og:description",
         content:

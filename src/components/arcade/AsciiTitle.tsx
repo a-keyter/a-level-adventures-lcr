@@ -33,12 +33,12 @@ export function AsciiTitle() {
       >
         {LINE_TWO}
       </pre>
-      <h1 className="sr-only">A Level Adventures in the LCR</h1>
+      <h1 className="sr-only">A Level Adventures at Carmel College</h1>
       <p
         aria-hidden
         className="font-display text-highlight pixel-shadow mt-2 text-[0.6rem] tracking-[0.35em] uppercase sm:text-xs"
       >
-        in the LCR
+        at Carmel College
       </p>
     </div>
   );
