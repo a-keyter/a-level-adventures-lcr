@@ -8,6 +8,7 @@ import { ArcadeButton } from "@/components/arcade/ArcadeButton";
 import { LoadingQuest } from "@/components/arcade/LoadingQuest";
 import { SubjectPicker } from "@/components/subjects/SubjectPicker";
 import { SectorFlower } from "@/components/sectors/SectorFlower";
+import { PassionOptions } from "@/components/sectors/PassionOptions";
 import { QuestReadyDialog } from "@/components/quests/QuestReadyDialog";
 import { savePassionSubject, startAdventure } from "@/lib/adventure.functions";
 import { SUBJECTS } from "@/data/subjects";
@@ -241,17 +242,7 @@ function SubjectsScreen() {
       ) : (
         <div className="flex flex-col gap-5 pb-8">
           <SectorFlower chosen={chosen} />
-          <SectorFlower
-            chosen={[passion]}
-            title="Ways to pursue your passion subject"
-            intro={
-              <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
-                With a spare option and a guaranteed job to match, you&rsquo;d add{" "}
-                <span className="text-foreground">{passion}</span>. Here&rsquo;s where it lines up
-                with roles employers across the city region need.
-              </p>
-            }
-          />
+          <PassionOptions chosen={chosen} passion={passion} />
           {submitting ? <LoadingQuest messages={LOADING_MESSAGES} /> : null}
           {ready ? (
             <div className="arcade-panel flex flex-col items-center gap-3 p-5 text-center">

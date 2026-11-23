@@ -443,12 +443,27 @@ export type SectorOverlap = {
   points: number;
 };
 
+/**
+ * Combined courses link to the same roles as each of the subjects they combine,
+ * so the role lists above only need to name the individual subjects.
+ */
+const SUBJECT_EQUIVALENTS: Record<string, string[]> = {
+  "English Language & Literature": ["English Language", "English Literature"],
+};
+
+/** Whether a role lists this subject, or a subject it combines. */
+export function roleMatchesSubject(role: SectorRole, subject: string): boolean {
+  return [subject, ...(SUBJECT_EQUIVALENTS[subject] ?? [])].some((name) =>
+    role.subjects.includes(name),
+  );
+}
+
 export function computeSectorOverlaps(chosen: string[]): SectorOverlap[] {
   return LSIP_SECTORS.map((sector) => {
     const matches = sector.roles
       .map((role) => ({
         role,
-        subjects: chosen.filter((subject) => role.subjects.includes(subject)),
+        subjects: chosen.filter((subject) => roleMatchesSubject(role, subject)),
       }))
       .filter((match) => match.subjects.length > 0);
     return {
@@ -457,4 +472,42 @@ export function computeSectorOverlaps(chosen: string[]): SectorOverlap[] {
       points: matches.reduce((total, match) => total + match.subjects.length, 0),
     };
   });
+}
+
+export type RoleOption = {
+  sector: LsipSector;
+  role: SectorRole;
+  /** Chosen subjects that feed this role. */
+  subjects: string[];
+  /** Whether the passion subject also feeds this role. */
+  includesPassion: boolean;
+};
+
+/**
+ * The roles that best fit a player's chosen subjects and passion subject.
+ * Roles the passion subject feeds come first, ranked by how many chosen
+ * subjects they also use; roles fed only by chosen subjects fill any gaps.
+ */
+export function topRoleOptions(chosen: string[], passion: string, limit = 3): RoleOption[] {
+  const seen = new Set<string>();
+  return LSIP_SECTORS.flatMap((sector) =>
+    sector.roles.map((role) => ({
+      sector,
+      role,
+      subjects: chosen.filter((subject) => roleMatchesSubject(role, subject)),
+      includesPassion: roleMatchesSubject(role, passion),
+    })),
+  )
+    .filter((option) => option.includesPassion || option.subjects.length > 0)
+    .sort(
+      (a, b) =>
+        Number(b.includesPassion) - Number(a.includesPassion) ||
+        b.subjects.length - a.subjects.length,
+    )
+    .filter((option) => {
+      if (seen.has(option.role.title)) return false;
+      seen.add(option.role.title);
+      return true;
+    })
+    .slice(0, limit);
 }
