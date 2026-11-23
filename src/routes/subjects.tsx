@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { z } from "zod";
 import { ArcadeFrame } from "@/components/arcade/ArcadeFrame";
@@ -9,11 +9,14 @@ import { LoadingQuest } from "@/components/arcade/LoadingQuest";
 import { SubjectPicker } from "@/components/subjects/SubjectPicker";
 import { SectorFlower } from "@/components/sectors/SectorFlower";
 import { QuestReadyDialog } from "@/components/quests/QuestReadyDialog";
-import { startAdventure } from "@/lib/adventure.functions";
+import { savePassionSubject, startAdventure } from "@/lib/adventure.functions";
 import { SUBJECTS } from "@/data/subjects";
 
 export const Route = createFileRoute("/subjects")({
-  validateSearch: z.object({ subjects: z.string().optional() }),
+  validateSearch: z.object({
+    subjects: z.string().optional(),
+    passion: z.string().optional(),
+  }),
   head: () => ({
     meta: [
       { title: "Choose your four A levels — A Level Adventures in the LCR" },
@@ -42,12 +45,25 @@ const LOADING_MESSAGES = [
   "Sketching four research quests just for you...",
 ];
 
+const BONUS_STEPS = [
+  "Imagine one extra slot",
+  "A related job is guaranteed",
+  "Pick your passion subject",
+];
+
+const QUEST_ERROR =
+  "Something went wrong while building your quests. Please try again in a moment.";
+
 function SubjectsScreen() {
-  const { subjects: subjectsQuery } = Route.useSearch();
+  const { subjects: subjectsQuery, passion: passionQuery } = Route.useSearch();
   const navigate = useNavigate();
   const begin = useServerFn(startAdventure);
+  const savePassion = useServerFn(savePassionSubject);
   const [submitting, setSubmitting] = useState(false);
   const [chosen, setChosen] = useState<string[]>(() => parseSubjects(subjectsQuery));
+  const [passion, setPassion] = useState<string | null>(() =>
+    parsePassion(passionQuery, parseSubjects(subjectsQuery)),
+  );
   const [ready, setReady] = useState<{
     selectionId: string;
     count: number;
@@ -56,16 +72,42 @@ function SubjectsScreen() {
   const [dismissed, setDismissed] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const startedQueryRef = useRef<string | null>(null);
+  const savedPassionRef = useRef<string | null>(null);
+  // Bumped whenever a run starts or is abandoned, so late results are ignored.
+  const runRef = useRef(0);
+
+  const startRun = useCallback(
+    (subjects: string[]) => {
+      const run = ++runRef.current;
+      setSubmitting(true);
+      void begin({ data: { subjects } })
+        .then((result) => {
+          if (run !== runRef.current) return;
+          setSubmitting(false);
+          setReady({
+            selectionId: result.selectionId,
+            count: result.ideas?.length ?? 4,
+            subjects,
+          });
+        })
+        .catch(() => {
+          if (run !== runRef.current) return;
+          setSubmitting(false);
+          setError(QUEST_ERROR);
+        });
+    },
+    [begin],
+  );
 
   useEffect(() => {
     setChosen(parseSubjects(subjectsQuery));
   }, [subjectsQuery]);
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !passion) return;
     const timer = window.setTimeout(() => setDismissed(false), 30_000);
     return () => window.clearTimeout(timer);
-  }, [ready]);
+  }, [ready, passion]);
 
   useEffect(() => {
     const restoredSubjects = parseSubjects(subjectsQuery);
@@ -81,21 +123,22 @@ function SubjectsScreen() {
 
     startedQueryRef.current = subjectsQuery ?? null;
     setChosen(restoredSubjects);
-    setSubmitting(true);
-    void begin({ data: { subjects: restoredSubjects } })
-      .then((result) => {
-        setSubmitting(false);
-        setReady({
-          selectionId: result.selectionId,
-          count: result.ideas?.length ?? 4,
-          subjects: restoredSubjects,
-        });
-      })
-      .catch(() => {
-        setSubmitting(false);
-        setError("Something went wrong while building your quests. Please try again in a moment.");
-      });
-  }, [begin, ready, subjectsQuery, submitting]);
+    setPassion(parsePassion(passionQuery, restoredSubjects));
+    startRun(restoredSubjects);
+  }, [passionQuery, ready, startRun, subjectsQuery, submitting]);
+
+  // Save the passion subject once both it and the run's selection exist.
+  useEffect(() => {
+    if (!ready || !passion) return;
+    const key = `${ready.selectionId}|${passion}`;
+    if (savedPassionRef.current === key) return;
+    savedPassionRef.current = key;
+    void savePassion({ data: { selectionId: ready.selectionId, subject: passion } }).catch(
+      (saveError: unknown) => {
+        console.error("Could not save passion subject", saveError);
+      },
+    );
+  }, [passion, ready, savePassion]);
 
   const goToQuests = () => {
     if (!ready) return;
@@ -106,13 +149,17 @@ function SubjectsScreen() {
     });
   };
 
+  const started = submitting || ready !== null;
+
   return (
     <ArcadeFrame>
-      {submitting || ready ? (
+      {started ? (
         <button
           type="button"
           onClick={() => {
+            runRef.current += 1;
             setReady(null);
+            setPassion(null);
             setDismissed(false);
             setSubmitting(false);
             void navigate({ to: "/subjects", search: {} });
@@ -132,9 +179,79 @@ function SubjectsScreen() {
         </Link>
       )}
 
-      {submitting || ready ? (
+      {!started ? (
+        <>
+          {error ? (
+            <p className="border-destructive bg-destructive/15 text-foreground mb-5 rounded-md border-2 p-4 text-sm">
+              {error}
+            </p>
+          ) : null}
+          <SubjectPicker
+            submitting={submitting}
+            initialChosen={chosen}
+            onSubmit={(subjects) => {
+              const query = subjects.join(",");
+              setError(null);
+              setChosen(subjects);
+              setPassion(null);
+              setDismissed(true);
+              window.scrollTo({ top: 0, behavior: "auto" });
+              startedQueryRef.current = query;
+              void navigate({ to: "/subjects", search: { subjects: query }, replace: true });
+              startRun(subjects);
+            }}
+          />
+        </>
+      ) : !passion ? (
+        <SubjectPicker
+          key="passion"
+          submitting={false}
+          min={1}
+          max={1}
+          exclude={chosen}
+          title="Bonus round"
+          intro={
+            <div className="mt-3 flex flex-col gap-2 text-sm leading-relaxed">
+              <p className="text-muted-foreground">
+                Imagine your timetable had room for one more A level, and you were guaranteed a job
+                in a field linked to it. Which subject would you add?
+              </p>
+              <p className="text-accent text-xs" aria-live="polite">
+                {ready
+                  ? "Your challenge briefs are ready. Lock in your passion subject to see them."
+                  : "Your challenge briefs are being built while you choose."}
+              </p>
+            </div>
+          }
+          steps={BONUS_STEPS}
+          submitLabel="Lock in passion subject"
+          slotLabel="Passion subject"
+          fullLabel="Your passion slot is full"
+          onSubmit={([pick]) => {
+            if (!pick) return;
+            setPassion(pick);
+            window.scrollTo({ top: 0, behavior: "auto" });
+            void navigate({
+              to: "/subjects",
+              search: { subjects: chosen.join(","), passion: pick },
+              replace: true,
+            });
+          }}
+        />
+      ) : (
         <div className="flex flex-col gap-5 pb-8">
           <SectorFlower chosen={chosen} />
+          <SectorFlower
+            chosen={[passion]}
+            title="Ways to pursue your passion subject"
+            intro={
+              <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
+                With a spare option and a guaranteed job to match, you&rsquo;d add{" "}
+                <span className="text-foreground">{passion}</span>. Here&rsquo;s where it lines up
+                with roles employers across the city region need.
+              </p>
+            }
+          />
           {submitting ? <LoadingQuest messages={LOADING_MESSAGES} /> : null}
           {ready ? (
             <div className="arcade-panel flex flex-col items-center gap-3 p-5 text-center">
@@ -153,44 +270,6 @@ function SubjectsScreen() {
             />
           ) : null}
         </div>
-      ) : (
-        <>
-          {error ? (
-            <p className="border-destructive bg-destructive/15 text-foreground mb-5 rounded-md border-2 p-4 text-sm">
-              {error}
-            </p>
-          ) : null}
-          <SubjectPicker
-            submitting={submitting}
-            initialChosen={chosen}
-            onSubmit={async (subjects) => {
-              setError(null);
-              setChosen(subjects);
-              setDismissed(true);
-              setSubmitting(true);
-              window.scrollTo({ top: 0, behavior: "auto" });
-              void navigate({
-                to: "/subjects",
-                search: { subjects: subjects.join(",") },
-                replace: true,
-              });
-              try {
-                const result = await begin({ data: { subjects } });
-                setSubmitting(false);
-                setReady({
-                  selectionId: result.selectionId,
-                  count: result.ideas?.length ?? 4,
-                  subjects,
-                });
-              } catch {
-                setSubmitting(false);
-                setError(
-                  "Something went wrong while building your quests. Please try again in a moment.",
-                );
-              }
-            }}
-          />
-        </>
       )}
     </ArcadeFrame>
   );
@@ -201,4 +280,11 @@ function parseSubjects(value: string | undefined) {
   return value
     ? [...new Set(value.split(",").filter((subject) => available.has(subject)))].slice(0, 4)
     : [];
+}
+
+/** Restore the passion subject from the URL, ignoring one already chosen. */
+function parsePassion(value: string | undefined, chosen: string[]) {
+  return value && SUBJECTS.some((subject) => subject.name === value) && !chosen.includes(value)
+    ? value
+    : null;
 }

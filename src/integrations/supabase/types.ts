@@ -93,18 +93,21 @@ export type Database = {
           combination_id: string
           created_at: string
           id: string
+          passion_subject: string | null
           subjects: string[]
         }
         Insert: {
           combination_id: string
           created_at?: string
           id?: string
+          passion_subject?: string | null
           subjects: string[]
         }
         Update: {
           combination_id?: string
           created_at?: string
           id?: string
+          passion_subject?: string | null
           subjects?: string[]
         }
         Relationships: [
