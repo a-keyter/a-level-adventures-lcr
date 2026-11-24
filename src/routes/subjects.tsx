@@ -52,6 +52,12 @@ const BONUS_STEPS = [
   "Pick your passion subject",
 ];
 
+const BONUS_GROUP_ORDER = [
+  "Creative & Performing",
+  "Sport & Wellbeing",
+  "Technical & Applied",
+];
+
 const QUEST_ERROR =
   "Something went wrong while building your quests. Please try again in a moment.";
 
@@ -210,6 +216,7 @@ function SubjectsScreen() {
           min={1}
           max={1}
           exclude={chosen}
+          groupOrder={BONUS_GROUP_ORDER}
           title="Bonus round"
           intro={
             <div className="mt-3 flex flex-col gap-2 text-sm leading-relaxed">

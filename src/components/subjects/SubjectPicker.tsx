@@ -17,6 +17,7 @@ export function SubjectPicker({
   min = 3,
   max = 4,
   exclude = NO_SUBJECTS,
+  groupOrder = NO_SUBJECTS,
   title = "Choose your subjects",
   intro,
   steps = DEFAULT_STEPS,
@@ -35,6 +36,8 @@ export function SubjectPicker({
   max?: number;
   /** Subjects that cannot be picked here, for example ones already chosen. */
   exclude?: string[];
+  /** Groups shown first, with the remaining groups keeping their usual order. */
+  groupOrder?: string[];
   title?: string;
   intro?: ReactNode;
   steps?: string[];
@@ -58,8 +61,13 @@ export function SubjectPicker({
       list.push(subject);
       map.set(subject.group, list);
     }
-    return Array.from(map.entries());
-  }, [exclude, query]);
+    return Array.from(map.entries()).sort(([left], [right]) => {
+      const leftIndex = groupOrder.indexOf(left);
+      const rightIndex = groupOrder.indexOf(right);
+      return (leftIndex < 0 ? groupOrder.length : leftIndex) -
+        (rightIndex < 0 ? groupOrder.length : rightIndex);
+    });
+  }, [exclude, groupOrder, query]);
 
   const toggle = (name: string) => {
     setChosen((current) => {
