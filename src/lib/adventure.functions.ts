@@ -214,7 +214,7 @@ export const getAdventure = createServerFn({ method: "GET" })
     const db = await getDb();
     const { data: row, error } = await db
       .from("selections")
-      .select("id, subjects, combination_id, subject_combinations(ideas)")
+      .select("id, subjects, passion_subject, combination_id, subject_combinations(ideas)")
       .eq("id", data.selectionId)
       .maybeSingle();
 
@@ -224,6 +224,7 @@ export const getAdventure = createServerFn({ method: "GET" })
     return {
       selectionId: row.id as string,
       subjects: row.subjects as string[],
+      passion: (row.passion_subject as string | null) ?? null,
       ideas: (combo?.ideas ?? []) as ProjectIdea[],
     };
   });
@@ -239,7 +240,7 @@ export const chooseProject = createServerFn({ method: "POST" })
     const db = await getDb();
     const { data: row } = await db
       .from("selections")
-      .select("id, subjects, combination_id, subject_combinations(ideas)")
+      .select("id, subjects, passion_subject, combination_id, subject_combinations(ideas)")
       .eq("id", data.selectionId)
       .maybeSingle();
 

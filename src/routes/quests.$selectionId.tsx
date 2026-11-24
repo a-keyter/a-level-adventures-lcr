@@ -8,6 +8,7 @@ import { ArcadeFrame } from "@/components/arcade/ArcadeFrame";
 import { LoadingQuest } from "@/components/arcade/LoadingQuest";
 import { PixelHeading } from "@/components/arcade/PixelHeading";
 import { ProjectCard } from "@/components/projects/ProjectCard";
+import { RoleEmployers } from "@/components/employers/RoleEmployers";
 import { ProjectDialog } from "@/components/projects/ProjectDialog";
 import { chooseProject, getAdventure } from "@/lib/adventure.functions";
 
@@ -105,6 +106,8 @@ function QuestsScreen() {
               />
             ))}
           </div>
+
+          <RoleEmployers chosen={data.subjects} passion={data.passion} />
 
           {openIndex !== null && data.ideas[openIndex] ? (
             <ProjectDialog
