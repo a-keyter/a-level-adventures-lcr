@@ -10,6 +10,8 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
+import { SchoolProvider } from "@/components/school/SchoolProvider";
+import { supabase } from "@/integrations/supabase/client";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -78,10 +80,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "A Level Adventures at Carmel College" },
-      { name: "description", content: "Explore where your A levels at Carmel College could take you in the Liverpool City Region." },
-      { property: "og:title", content: "A Level Adventures at Carmel College" },
-      { property: "og:description", content: "Explore where your A levels at Carmel College could take you." },
+      { title: "A Level Adventures in the LCR" },
+      { name: "description", content: "Explore where your A levels could take you in the Liverpool City Region." },
+      { property: "og:title", content: "A Level Adventures in the LCR" },
+      { property: "og:description", content: "Explore where your A levels could take you in the Liverpool City Region." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -121,11 +123,23 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      void router.invalidate();
+      if (event !== "SIGNED_OUT") void queryClient.invalidateQueries();
+    });
+    return () => data.subscription.unsubscribe();
+  }, [queryClient, router]);
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <SchoolProvider>
+        <Outlet />
+      </SchoolProvider>
     </QueryClientProvider>
   );
 }

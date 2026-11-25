@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Search, X } from "lucide-react";
-import { SUBJECTS, type Subject } from "@/data/subjects";
+import type { Subject } from "@/data/subjects";
+import { subjectsForSchool, useSchool } from "@/lib/school";
 import { ArcadeButton } from "@/components/arcade/ArcadeButton";
 import { PixelHeading } from "@/components/arcade/PixelHeading";
 import { SubjectSlots } from "@/components/subjects/SubjectSlots";
@@ -47,6 +48,8 @@ export function SubjectPicker({
   fullLabel?: string;
   optionalHint?: string;
 }) {
+  const { school } = useSchool();
+  const available = useMemo(() => subjectsForSchool(school), [school]);
   const [query, setQuery] = useState("");
   const [chosen, setChosen] = useState<string[]>(initialChosen);
   const [open, setOpen] = useState<Subject | null>(null);
@@ -54,7 +57,7 @@ export function SubjectPicker({
   const grouped = useMemo(() => {
     const needle = query.trim().toLowerCase();
     const map = new Map<string, Subject[]>();
-    for (const subject of SUBJECTS) {
+    for (const subject of available) {
       if (exclude.includes(subject.name)) continue;
       if (needle && !subject.name.toLowerCase().includes(needle)) continue;
       const list = map.get(subject.group) ?? [];
@@ -67,7 +70,7 @@ export function SubjectPicker({
       return (leftIndex < 0 ? groupOrder.length : leftIndex) -
         (rightIndex < 0 ? groupOrder.length : rightIndex);
     });
-  }, [exclude, groupOrder, query]);
+  }, [available, exclude, groupOrder, query]);
 
   const toggle = (name: string) => {
     setChosen((current) => {

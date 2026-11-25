@@ -6,8 +6,8 @@
 
 /*
  * A Level Adventures in the LCR — arcade design system.
- * Carmel College colours (deep Carmel blue, sky blue,
- * pale ice blue, warm cream) reworked into a friendly retro-arcade skin.
+ * Default colours (deep blue, sky blue, pale ice blue, warm cream);
+ * schools can override --primary/--accent/--highlight/--background, reworked into a friendly retro-arcade skin.
  */
 
 @theme inline {

@@ -10,19 +10,39 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as SubjectsRouteImport } from './routes/subjects'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as PlanChoiceIdRouteImport } from './routes/plan.$choiceId'
 import { Route as QuestsSelectionIdRouteImport } from './routes/quests.$selectionId'
+import { Route as SSlugRouteImport } from './routes/s.$slug'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminSchoolsSchoolIdRouteImport } from './routes/_authenticated/admin.schools.$schoolId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SubjectsRoute = SubjectsRouteImport.update({
   id: '/subjects',
   path: '/subjects',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const PlanChoiceIdRoute = PlanChoiceIdRouteImport.update({
   id: '/plan/$choiceId',
@@ -34,40 +54,101 @@ const QuestsSelectionIdRoute = QuestsSelectionIdRouteImport.update({
   path: '/quests/$selectionId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SSlugRoute = SSlugRouteImport.update({
+  id: '/s/$slug',
+  path: '/s/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminSchoolsSchoolIdRoute =
+  AuthenticatedAdminSchoolsSchoolIdRouteImport.update({
+    id: '/schools/$schoolId',
+    path: '/schools/$schoolId',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/subjects': typeof SubjectsRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/plan/$choiceId': typeof PlanChoiceIdRoute
   '/quests/$selectionId': typeof QuestsSelectionIdRoute
+  '/s/$slug': typeof SSlugRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/schools/$schoolId': typeof AuthenticatedAdminSchoolsSchoolIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/subjects': typeof SubjectsRoute
   '/plan/$choiceId': typeof PlanChoiceIdRoute
   '/quests/$selectionId': typeof QuestsSelectionIdRoute
+  '/s/$slug': typeof SSlugRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/schools/$schoolId': typeof AuthenticatedAdminSchoolsSchoolIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/subjects': typeof SubjectsRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/plan/$choiceId': typeof PlanChoiceIdRoute
   '/quests/$selectionId': typeof QuestsSelectionIdRoute
+  '/s/$slug': typeof SSlugRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/schools/$schoolId': typeof AuthenticatedAdminSchoolsSchoolIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/subjects' | '/plan/$choiceId' | '/quests/$selectionId'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/subjects'
+    | '/admin'
+    | '/plan/$choiceId'
+    | '/quests/$selectionId'
+    | '/s/$slug'
+    | '/admin/'
+    | '/admin/schools/$schoolId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/subjects' | '/plan/$choiceId' | '/quests/$selectionId'
+  to:
+    | '/'
+    | '/auth'
+    | '/subjects'
+    | '/plan/$choiceId'
+    | '/quests/$selectionId'
+    | '/s/$slug'
+    | '/admin'
+    | '/admin/schools/$schoolId'
   id:
-    '__root__' | '/' | '/subjects' | '/plan/$choiceId' | '/quests/$selectionId'
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/subjects'
+    | '/_authenticated/admin'
+    | '/plan/$choiceId'
+    | '/quests/$selectionId'
+    | '/s/$slug'
+    | '/_authenticated/admin/'
+    | '/_authenticated/admin/schools/$schoolId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   SubjectsRoute: typeof SubjectsRoute
   PlanChoiceIdRoute: typeof PlanChoiceIdRoute
   QuestsSelectionIdRoute: typeof QuestsSelectionIdRoute
+  SSlugRoute: typeof SSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -79,12 +160,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/subjects': {
       id: '/subjects'
       path: '/subjects'
       fullPath: '/subjects'
       preLoaderRoute: typeof SubjectsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/plan/$choiceId': {
       id: '/plan/$choiceId'
@@ -100,14 +202,63 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuestsSelectionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/s/$slug': {
+      id: '/s/$slug'
+      path: '/s/$slug'
+      fullPath: '/s/$slug'
+      preLoaderRoute: typeof SSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/schools/$schoolId': {
+      id: '/_authenticated/admin/schools/$schoolId'
+      path: '/schools/$schoolId'
+      fullPath: '/admin/schools/$schoolId'
+      preLoaderRoute: typeof AuthenticatedAdminSchoolsSchoolIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminSchoolsSchoolIdRoute: typeof AuthenticatedAdminSchoolsSchoolIdRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminSchoolsSchoolIdRoute:
+    AuthenticatedAdminSchoolsSchoolIdRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   SubjectsRoute: SubjectsRoute,
   PlanChoiceIdRoute: PlanChoiceIdRoute,
   QuestsSelectionIdRoute: QuestsSelectionIdRoute,
+  SSlugRoute: SSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

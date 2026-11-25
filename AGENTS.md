@@ -56,3 +56,6 @@ npm run build
 ```
 
 There is no test script currently defined in `package.json`; add focused tests only when the project gains a test runner or the change warrants introducing one.
+
+- School branding lives in the `schools` table and is applied client-side from sessionStorage via `SchoolProvider` (CSS variable overrides, hex-only), set on `/s/$slug` and cleared on `/`; why: keeps the student journey's URLs unchanged while any page keeps the school's look.
+- Admin access uses Cloud Auth plus `user_roles`/`has_role`; school writes go through the browser client under admin-only RLS. Logos are stored as resized data URLs because public storage buckets are blocked in this workspace.

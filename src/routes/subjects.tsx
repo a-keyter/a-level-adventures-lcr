@@ -12,6 +12,7 @@ import { PassionOptions } from "@/components/sectors/PassionOptions";
 import { QuestReadyDialog } from "@/components/quests/QuestReadyDialog";
 import { savePassionSubject, startAdventure } from "@/lib/adventure.functions";
 import { SUBJECTS } from "@/data/subjects";
+import { useSchool } from "@/lib/school";
 
 export const Route = createFileRoute("/subjects")({
   validateSearch: z.object({
@@ -65,6 +66,8 @@ function SubjectsScreen() {
   const { subjects: subjectsQuery, passion: passionQuery } = Route.useSearch();
   const navigate = useNavigate();
   const begin = useServerFn(startAdventure);
+  const { school } = useSchool();
+  const schoolSlug = school?.slug;
   const savePassion = useServerFn(savePassionSubject);
   const [submitting, setSubmitting] = useState(false);
   const [chosen, setChosen] = useState<string[]>(() => parseSubjects(subjectsQuery));
@@ -87,7 +90,7 @@ function SubjectsScreen() {
     (subjects: string[]) => {
       const run = ++runRef.current;
       setSubmitting(true);
-      void begin({ data: { subjects } })
+      void begin({ data: schoolSlug ? { subjects, schoolSlug } : { subjects } })
         .then((result) => {
           if (run !== runRef.current) return;
           setSubmitting(false);
@@ -103,7 +106,7 @@ function SubjectsScreen() {
           setError(QUEST_ERROR);
         });
     },
-    [begin],
+    [begin, schoolSlug],
   );
 
   useEffect(() => {

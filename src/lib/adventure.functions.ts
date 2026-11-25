@@ -82,11 +82,33 @@ const reasoningOptions = {
 /** Create (or reuse) a run for four chosen subjects and return its ideas. */
 export const startAdventure = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
-    z.object({ subjects: z.array(z.string()).min(3).max(4) }).parse(input),
+    z
+      .object({
+        subjects: z.array(z.string()).min(3).max(4),
+        schoolSlug: z.string().regex(/^[a-z0-9-]{1,60}$/).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data }) => {
     const db = await getDb();
     const key = comboKey(data.subjects);
+
+    let schoolId: string | null = null;
+    if (data.schoolSlug) {
+      const school = await db
+        .from("schools")
+        .select("id, subjects")
+        .eq("slug", data.schoolSlug)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (school.data) {
+        const offered = school.data.subjects;
+        if (offered.length > 0 && data.subjects.some((s) => !offered.includes(s))) {
+          throw new Error("Some of those subjects aren't offered at your school.");
+        }
+        schoolId = school.data.id;
+      }
+    }
 
     const existing = await db
       .from("subject_combinations")
@@ -156,7 +178,7 @@ export const startAdventure = createServerFn({ method: "POST" })
 
     const selection = await db
       .from("selections")
-      .insert({ combination_id: combinationId, subjects: data.subjects })
+      .insert({ combination_id: combinationId, subjects: data.subjects, school_id: schoolId })
       .select("id")
       .single();
 
