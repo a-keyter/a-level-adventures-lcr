@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Anyone views school logos" ON storage.objects;
